@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MajorMap — U.S. College Major Finder &amp; Degree Roadmap</title>
+<style>
+
+  :root{
+    --bg:#f3f5fb; --card:#ffffff; --ink:#1b2140; --sub:#5b6480; --line:#e4e8f4;
+    --brand:#4f46e5; --brand-2:#3730a3; --brand-3:#7c3aed; --brand-soft:#eceafd;
+    --accent:#0d9488; --teal-soft:#dcf5f1;
+    --gold:#b45309; --gold-soft:#fdf1dd; --green:#15803d; --green-soft:#e2f6e9;
+    --purple:#7c3aed; --purple-soft:#f1eafd; --red:#b3453f; --red-soft:#fbeceb;
+    --radius:18px; --shadow:0 1px 2px rgba(27,33,64,.05),0 10px 30px rgba(27,33,64,.08);
+    --shadow-lift:0 4px 10px rgba(27,33,64,.08),0 18px 44px rgba(79,70,229,.16);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+
+  /* ---------- hero ---------- */
+  header{position:relative;overflow:hidden;color:#fff;padding:44px 20px 120px;
+    background:linear-gradient(125deg,#1e1b4b 0%,#3730a3 35%,#4f46e5 62%,#7c3aed 100%)}
+  header::before,header::after{content:"";position:absolute;border-radius:50%;filter:blur(60px);opacity:.45;pointer-events:none}
+  header::before{width:420px;height:420px;background:#818cf8;top:-160px;right:-80px;animation:floaty 9s ease-in-out infinite}
+  header::after{width:340px;height:340px;background:#c084fc;bottom:-180px;left:-60px;animation:floaty 11s ease-in-out infinite reverse}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 4px;position:relative;z-index:2}
+  .logo{display:flex;align-items:center;gap:13px;font-weight:800;font-size:1.7rem;letter-spacing:-.02em}
+  .logo .cap{width:46px;height:46px;border-radius:14px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);display:flex;align-items:center;justify-content:center;font-size:1.4rem;backdrop-filter:blur(4px)}
+  header p.tag{margin-top:12px;max-width:660px;color:#dcd9ff;font-size:1.08rem}
+  .herostats{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
+  .hstat{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);border-radius:99px;padding:7px 17px;font-size:.86rem;font-weight:600;color:#eef;backdrop-filter:blur(4px)}
+  .hstat b{color:#fff}
+  .gearbtn{position:absolute;top:24px;right:24px;z-index:3;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.32);color:#fff;border-radius:12px;padding:8px 14px;font-size:.86rem;font-weight:600;cursor:pointer;backdrop-filter:blur(4px)}
+  .gearbtn:hover{background:rgba(255,255,255,.26)}
+
+  /* ---------- search panel ---------- */
+  .searchbox{max-width:1080px;margin:-76px auto 0;padding:0 20px;position:relative;z-index:5}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-lift);padding:24px;animation:fadeUp .5s ease both}
+  .srow{display:flex;gap:14px;flex-wrap:wrap}
+  .field{position:relative;flex:1 1 320px}
+  .field label,.sel label{display:block;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:var(--sub);margin-bottom:7px}
+  .field input{width:100%;padding:15px 15px 15px 46px;font-size:1.05rem;border:2px solid var(--line);border-radius:13px;outline:none;background:#fafbff;transition:border-color .15s, box-shadow .15s}
+  .field input:focus{border-color:var(--brand);box-shadow:0 0 0 4px var(--brand-soft)}
+  .field .mag{position:absolute;left:15px;bottom:16px;color:var(--brand)}
+  .sel{flex:0 1 235px}
+  .sel select{width:100%;padding:15px 12px;font-size:1rem;border:2px solid var(--line);border-radius:13px;background:#fafbff;outline:none;color:var(--ink);cursor:pointer}
+  .sel select:focus{border-color:var(--brand);box-shadow:0 0 0 4px var(--brand-soft)}
+  .gobtn{flex:0 0 auto;align-self:flex-end;background:linear-gradient(120deg,var(--brand),var(--brand-3));color:#fff;border:none;border-radius:13px;padding:15px 30px;font-size:1.05rem;font-weight:800;cursor:pointer;box-shadow:0 6px 18px rgba(79,70,229,.35);transition:transform .12s, box-shadow .12s}
+  .gobtn:hover{transform:translateY(-1px);box-shadow:0 9px 24px rgba(79,70,229,.45)}
+  .gobtn:disabled{opacity:.55;cursor:default;transform:none}
+  .ac{position:absolute;z-index:30;top:100%;left:0;right:0;margin-top:8px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-lift);max-height:340px;overflow:auto;display:none}
+  .ac.open{display:block}
+  .ac .item{padding:11px 15px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .ac .item:hover,.ac .item.hl{background:var(--brand-soft)}
+  .ac .item .lft{display:flex;align-items:center;gap:10px}
+  .ac .item .ico{font-size:1.05rem}
+  .ac .item .cat{font-size:.72rem;color:var(--sub);background:var(--bg);border:1px solid var(--line);padding:2px 9px;border-radius:99px;white-space:nowrap}
+  .hint{font-size:.84rem;color:var(--sub);margin-top:12px}
+  .hint a{color:var(--brand);font-weight:600}
+  .popular{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:14px}
+  .popular .plabel{font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--sub)}
+  .pop{border:1.5px solid var(--line);background:#fafbff;border-radius:99px;padding:6px 14px;font-size:.85rem;font-weight:600;color:var(--brand-2);cursor:pointer;transition:all .12s}
+  .pop:hover{border-color:var(--brand);background:var(--brand-soft);transform:translateY(-1px)}
+
+  /* ---------- browse by field ---------- */
+  .browse{max-width:1080px;margin:30px auto 0;padding:0 20px;animation:fadeUp .6s .1s ease both}
+  .browse h2{font-size:1.18rem;margin-bottom:3px}
+  .browse .muted{margin-bottom:14px}
+  .catgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:12px}
+  .cattile{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:16px 14px;cursor:pointer;text-align:left;transition:all .15s;box-shadow:var(--shadow)}
+  .cattile:hover{transform:translateY(-3px);box-shadow:var(--shadow-lift);border-color:var(--tc,var(--brand))}
+  .cattile.on{border-color:var(--tc,var(--brand));background:linear-gradient(180deg,#fff, var(--brand-soft))}
+  .cattile .ci{font-size:1.7rem;line-height:1}
+  .cattile .cn{font-weight:800;font-size:.92rem;margin-top:9px;letter-spacing:-.01em}
+  .cattile .cc{font-size:.76rem;color:var(--sub);margin-top:2px;font-weight:600}
+  .majorpills{display:none;flex-wrap:wrap;gap:9px;margin-top:16px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+  .majorpills.open{display:flex;animation:fadeUp .3s ease both}
+  .mp{border:1.5px solid var(--line);background:#fafbff;border-radius:99px;padding:8px 16px;font-size:.9rem;font-weight:600;color:var(--ink);cursor:pointer;transition:all .12s}
+  .mp:hover{border-color:var(--brand);background:var(--brand-soft);color:var(--brand-2);transform:translateY(-1px)}
+
+  main{max-width:1080px;margin:28px auto 80px;padding:0 20px;display:flex;flex-direction:column;gap:30px}
+  h2{font-size:1.3rem;letter-spacing:-.015em;margin-bottom:4px}
+  .muted{color:var(--sub);font-size:.93rem}
+
+  .status{display:none;padding:16px 19px;border-radius:14px;font-size:.95rem;animation:fadeUp .3s ease both}
+  .status.info{display:block;background:var(--brand-soft);border:1px solid #d5cffa;color:#3b2f9e}
+  .status.err{display:block;background:var(--red-soft);border:1px solid #eec9c6;color:#7c2f2a}
+  .status a{color:inherit;font-weight:700}
+  .spinner{display:inline-block;width:15px;height:15px;border:2.5px solid #d5cffa;border-top-color:var(--brand);border-radius:50%;animation:spin .8s linear infinite;vertical-align:-2px;margin-right:8px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ---------- results ---------- */
+  #resultsSec{animation:fadeUp .4s ease both}
+  .resultshead{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+  .countbubble{background:linear-gradient(120deg,var(--brand),var(--brand-3));color:#fff;font-weight:800;font-size:1.05rem;border-radius:14px;padding:10px 16px;box-shadow:0 6px 16px rgba(79,70,229,.3);white-space:nowrap}
+  .lvlfilters{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+  .chip{border:1.5px solid var(--line);background:#fff;color:var(--sub);border-radius:99px;padding:6px 15px;font-size:.85rem;font-weight:700;cursor:pointer;transition:all .12s}
+  .chip:hover{border-color:var(--brand);color:var(--brand-2)}
+  .chip.on{background:linear-gradient(120deg,var(--brand),var(--brand-3));border-color:transparent;color:#fff;box-shadow:0 4px 12px rgba(79,70,229,.3)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:15px;margin-top:12px}
+  .college{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:17px 18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:9px;transition:all .15s}
+  .college:hover{transform:translateY(-3px);box-shadow:var(--shadow-lift);border-color:#c7cdf7}
+  .cardtop{display:flex;gap:12px;align-items:flex-start}
+  .avatar{flex:none;width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.15rem;color:#fff;background:linear-gradient(135deg,var(--av1,#4f46e5),var(--av2,#7c3aed))}
+  .college .nm{font-weight:800;font-size:1rem;letter-spacing:-.01em;line-height:1.3}
+  .college .nm a{color:var(--ink);text-decoration:none}
+  .college .nm a:hover{color:var(--brand);text-decoration:underline}
+  .college .loc{font-size:.84rem;color:var(--sub);margin-top:2px}
+  .badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+  .b{font-size:.72rem;font-weight:800;padding:3.5px 10px;border-radius:99px;border:1px solid transparent}
+  .b.own1{background:var(--green-soft);color:var(--green)}
+  .b.own2{background:var(--purple-soft);color:var(--purple)}
+  .b.own3{background:var(--gold-soft);color:var(--gold)}
+  .b.lvl{background:var(--brand-soft);color:var(--brand-2)}
+  .b.lvlgrad{background:var(--teal-soft);color:var(--accent)}
+
+  /* ---------- roadmap ---------- */
+  #roadmapSec{animation:fadeUp .4s ease both}
+  .rmintro{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+  .rmicon{flex:none;width:54px;height:54px;border-radius:16px;font-size:1.65rem;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--brand-soft),#fff);border:1.5px solid var(--line)}
+  .levels{display:flex;flex-wrap:wrap;gap:0;border:1.5px solid var(--line);border-radius:15px;overflow:hidden;background:#fff;box-shadow:var(--shadow)}
+  .levels button{flex:1 1 120px;padding:14px 8px;background:#fff;border:none;border-left:1px solid var(--line);font-size:.92rem;font-weight:800;color:var(--sub);cursor:pointer;position:relative;transition:all .12s}
+  .levels button:first-child{border-left:none}
+  .levels button .stepn{display:inline-flex;align-items:center;justify-content:center;width:21px;height:21px;border-radius:50%;background:var(--bg);border:1.5px solid var(--line);font-size:.72rem;font-weight:800;margin-right:6px;vertical-align:1px}
+  .levels button.on{background:linear-gradient(120deg,var(--brand),var(--brand-3));color:#fff}
+  .levels button.on .stepn{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.5);color:#fff}
+  .levels button:hover:not(.on){background:var(--brand-soft);color:var(--brand-2)}
+  .levels button.na{opacity:.5}
+  .levels button .yrs{display:block;font-size:.72rem;font-weight:600;opacity:.75;margin-top:2px}
+  .roadmap{display:flex;flex-direction:column;gap:16px}
+  .rmgrid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+  @media(max-width:760px){.rmgrid{grid-template-columns:1fr}}
+  .rcard{background:var(--card);border:1.5px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:19px 21px}
+  .rcard h3{font-size:1rem;display:flex;align-items:center;gap:9px;margin-bottom:11px}
+  .rcard h3 .dot{width:10px;height:10px;border-radius:50%;background:var(--brand);flex:none}
+  .rcard.pre h3 .dot{background:var(--gold)}
+  .rcard.out h3 .dot{background:var(--green)}
+  .rcard ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+  .rcard li{padding-left:24px;position:relative;font-size:.93rem}
+  .rcard li::before{content:"";position:absolute;left:2px;top:.42em;width:8px;height:8px;border-radius:3px;background:#c3c9f2}
+  .rcard.pre li::before{background:#ecc793}
+  .rcard.out li::before{background:#a3dcb8}
+  .seq{background:var(--card);border:1.5px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:22px}
+  .seq h3{font-size:1.02rem;margin-bottom:16px}
+  .term{border-left:3px solid var(--brand);padding:2px 0 2px 17px;margin:0 0 17px 5px;position:relative}
+  .term::before{content:"";position:absolute;left:-7.5px;top:2px;width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--brand)}
+  .term:last-child{margin-bottom:0}
+  .term .t{font-weight:800;font-size:.84rem;text-transform:uppercase;letter-spacing:.06em;color:var(--brand-2);margin-bottom:7px}
+  .term ul{list-style:none;display:flex;flex-direction:column;gap:6px}
+  .term li{font-size:.93rem;padding-left:21px;position:relative}
+  .term li::before{content:"✓";position:absolute;left:0;color:var(--brand);font-weight:800;opacity:.5}
+  .term li .tagx{font-size:.72rem;font-weight:800;color:var(--accent);background:var(--teal-soft);border-radius:99px;padding:1px 9px;margin-left:6px;white-space:nowrap}
+  .stats{display:flex;flex-wrap:wrap;gap:12px}
+  .stat{flex:1 1 150px;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:13px 17px;box-shadow:var(--shadow)}
+  .stat .v{font-size:1.18rem;font-weight:800;letter-spacing:-.01em;background:linear-gradient(120deg,var(--brand),var(--brand-3));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .stat .k{font-size:.74rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--sub)}
+  .note{background:var(--gold-soft);border:1.5px solid #efd9ab;border-radius:14px;padding:14px 17px;font-size:.9rem;color:#6d4a12}
+  .gatebox{background:var(--card);border:1.5px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:26px;text-align:left}
+  .gatebox .gi{font-size:1.9rem}
+  .gatebox h3{margin:8px 0 6px;font-size:1.05rem}
+  .gatebox p{font-size:.94rem;color:var(--sub);max-width:640px}
+  .gatebox .gsteps{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+  .gatebox .gsteps div{font-size:.93rem;padding-left:26px;position:relative}
+  .gatebox .gsteps div::before{content:"→";position:absolute;left:2px;color:var(--brand);font-weight:800}
+  .empty{padding:36px;text-align:center;color:var(--sub);background:var(--card);border:1.5px dashed #c9cfe8;border-radius:var(--radius)}
+
+  /* ---------- modal ---------- */
+  .modal{position:fixed;inset:0;background:rgba(20,18,50,.5);display:none;align-items:center;justify-content:center;z-index:100;padding:20px;backdrop-filter:blur(3px)}
+  .modal.open{display:flex}
+  .mbox{background:#fff;border-radius:18px;max-width:490px;width:100%;padding:28px;box-shadow:0 24px 70px rgba(0,0,0,.35);animation:fadeUp .25s ease both}
+  .mbox h3{margin-bottom:8px}
+  .mbox p{font-size:.92rem;color:var(--sub);margin-bottom:14px}
+  .mbox input{width:100%;padding:12px 14px;border:2px solid var(--line);border-radius:11px;font-size:.95rem;outline:none}
+  .mbox input:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+  .mrow{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+  .btn2{border:1.5px solid var(--line);background:#fff;border-radius:11px;padding:10px 19px;font-weight:700;cursor:pointer;color:var(--sub)}
+  .btnp{border:none;background:linear-gradient(120deg,var(--brand),var(--brand-3));color:#fff;border-radius:11px;padding:10px 19px;font-weight:800;cursor:pointer}
+  footer{max-width:1080px;margin:0 auto 44px;padding:0 20px;color:var(--sub);font-size:.8rem}
+  footer a{color:var(--brand)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="logo"><span class="cap">🎓</span> MajorMap</div>
+    <p class="tag">Find your major, see every college in your state that offers it, and follow a step-by-step course roadmap — from Certificate all the way to Doctorate.</p>
+    <div class="herostats">
+      <span class="hstat"><b id="statMajors">100+</b> majors</span>
+      <span class="hstat"><b>5</b> degree levels</span>
+      <span class="hstat"><b>Live</b> U.S. Dept. of Education data</span>
+      <span class="hstat"><b>All 50</b> states + DC &amp; PR</span>
+    </div>
+    <button class="gearbtn" id="gearBtn" title="API key settings">⚙ API key</button>
+  </div>
+</header>
+
+<div class="searchbox">
+  <div class="panel">
+    <div class="srow">
+      <div class="field">
+        <label for="majorInput">What do you want to study?</label>
+        <svg class="mag" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="majorInput" type="text" placeholder="Try “Veterinary Medicine”, “Nursing”, “Computer Science”…" autocomplete="off">
+        <div class="ac" id="acList"></div>
+      </div>
+      <div class="sel">
+        <label for="stateSel">Your state</label>
+        <select id="stateSel"></select>
+      </div>
+      <button class="gobtn" id="goBtn">Search 🔎</button>
+    </div>
+    <div class="popular"><span class="plabel">Popular:</span><span id="popRow"></span></div>
+    <div class="hint">Live college availability from the U.S. Dept. of Education <a href="https://collegescorecard.ed.gov/" target="_blank" rel="noopener">College Scorecard</a>. Pick a suggestion for best results.</div>
+  </div>
+</div>
+
+<section class="browse" id="browseSec">
+  <h2>Or browse by field 🧭</h2>
+  <div class="muted">Tap a field to see every major in it — tap a major to search your state.</div>
+  <div class="catgrid" id="catGrid"></div>
+  <div class="majorpills" id="majorPills"></div>
+</section>
+
+<main>
+  <div class="status" id="statusBox"></div>
+
+  <section id="resultsSec" style="display:none">
+    <div class="resultshead">
+      <div class="countbubble" id="countBubble">0</div>
+      <div>
+        <h2 id="resultsTitle"></h2>
+        <div class="muted" id="resultsSub"></div>
+      </div>
+    </div>
+    <div class="lvlfilters" id="lvlFilters"></div>
+    <div class="cards" id="cards"></div>
+    <div class="empty" id="noResults" style="display:none"></div>
+  </section>
+
+  <section id="roadmapSec" style="display:none">
+    <div class="rmintro" style="margin-bottom:14px">
+      <div class="rmicon" id="rmIcon">🎓</div>
+      <div>
+        <h2 id="rmTitle"></h2>
+        <div class="muted" id="rmDesc"></div>
+      </div>
+    </div>
+    <div class="levels" id="lvlTabs"></div>
+    <div class="roadmap" id="rmBody" style="margin-top:16px"></div>
+  </section>
+</main>
+
+<footer>
+  College availability comes live from the College Scorecard API (api.data.gov). Course roadmaps are representative national sequences — exact course names, numbers, and prerequisites vary by institution; always confirm with the college’s own catalog and an academic advisor. Built with Claude.
+</footer>
+
+<div class="modal" id="keyModal">
+  <div class="mbox">
+    <h3>College Scorecard API key</h3>
+    <p>The app ships with the shared <b>DEMO_KEY</b>, which has a low hourly limit. Get your own free key in ~30 seconds at <a href="https://api.data.gov/signup/" target="_blank" rel="noopener">api.data.gov/signup</a> (it's emailed to you instantly), then paste it here. The key is kept in memory for this session only.</p>
+    <input id="keyInput" type="text" placeholder="Paste your api.data.gov key (or leave DEMO_KEY)">
+    <div class="mrow">
+      <button class="btn2" id="keyCancel">Cancel</button>
+      <button class="btnp" id="keySave">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= DATA ================= */
+
+const STATES = [["AL","Alabama"],["AK","Alaska"],["AZ","Arizona"],["AR","Arkansas"],["CA","California"],["CO","Colorado"],["CT","Connecticut"],["DE","Delaware"],["DC","District of Columbia"],["FL","Florida"],["GA","Georgia"],["HI","Hawaii"],["ID","Idaho"],["IL","Illinois"],["IN","Indiana"],["IA","Iowa"],["KS","Kansas"],["KY","Kentucky"],["LA","Louisiana"],["ME","Maine"],["MD","Maryland"],["MA","Massachusetts"],["MI","Michigan"],["MN","Minnesota"],["MS","Mississippi"],["MO","Missouri"],["MT","Montana"],["NE","Nebraska"],["NV","Nevada"],["NH","New Hampshire"],["NJ","New Jersey"],["NM","New Mexico"],["NY","New York"],["NC","North Carolina"],["ND","North Dakota"],["OH","Ohio"],["OK","Oklahoma"],["OR","Oregon"],["PA","Pennsylvania"],["PR","Puerto Rico"],["RI","Rhode Island"],["SC","South Carolina"],["SD","South Dakota"],["TN","Tennessee"],["TX","Texas"],["UT","Utah"],["VT","Vermont"],["VA","Virginia"],["WA","Washington"],["WV","West Virginia"],["WI","Wisconsin"],["WY","Wyoming"]];
+
+/* College Scorecard credential.level codes for 4-digit CIP program entries */
+const CRED = {1:"Certificate",2:"Associate",3:"Bachelor's",4:"Post-bacc Cert.",5:"Master's",6:"Doctorate",7:"First Professional",8:"Graduate Cert."};
+const UNDERGRAD = [1,2,3], GRAD = [4,5,6,7,8];
+
+/* Majors catalog: n=name, cip=4-digit CIP code, cat=category, d=description,
+   hs=high-school prep, intro/core/adv=undergrad course sequence, grad=graduate courses,
+   lic=licensure/exam note, alt=extra search terms */
+const MAJORS = [
+ {n:"Computer Science",cip:"1107",cat:"Computing",alt:"software programming coding CS",
+  d:"The study of computation, algorithms, and software systems — from theory to building real applications.",
+  hs:["Algebra II & Pre-Calculus","Physics","A programming or AP Computer Science course (recommended)"],
+  intro:["Introduction to Programming (CS 101)","Object-Oriented Programming","Discrete Mathematics","Calculus I"],
+  core:["Data Structures & Algorithms","Computer Architecture & Organization","Operating Systems","Database Systems","Calculus II & Linear Algebra","Theory of Computation"],
+  adv:["Software Engineering","Computer Networks","Artificial Intelligence / Machine Learning","Compilers or Programming Languages","Computer Security","Senior Capstone Project"],
+  grad:["Advanced Algorithms","Distributed Systems","Machine Learning (graduate)","Research Methods in CS","Thesis or Applied Project"]},
+ {n:"Computer Information Systems / IT",cip:"1101",cat:"Computing",alt:"information technology systems",
+  d:"Applying computing and information systems to solve business and organizational problems.",
+  hs:["Algebra II","Computer applications coursework","Business or statistics electives"],
+  intro:["Introduction to Information Systems","Programming Fundamentals","Computer Hardware & Software Essentials","College Algebra or Finite Math"],
+  core:["Systems Analysis & Design","Database Management","Networking Essentials","Web Application Development","Business Statistics","IT Project Management"],
+  adv:["Enterprise Architecture","Information Security Management","Cloud Computing","Data Analytics for Business","IS Capstone Project"],
+  grad:["IT Strategy & Governance","Advanced Database Systems","Enterprise Systems Integration","Analytics & Decision Support","Capstone / Practicum"]},
+ {n:"Cybersecurity",cip:"1110",cat:"Computing",alt:"information security infosec network security",
+  d:"Protecting computer systems, networks, and data from attack — spanning defense, forensics, and policy.",
+  hs:["Algebra II","Computer science or networking basics","Strong attention to detail"],
+  intro:["Introduction to Cybersecurity","Programming Fundamentals (Python)","Computer Networks I","Operating Systems Fundamentals (Linux/Windows)"],
+  core:["Network Security","Ethical Hacking & Penetration Testing","Digital Forensics","Cryptography Basics","Security Policy & Governance","Scripting for Security"],
+  adv:["Incident Response & Threat Hunting","Cloud Security","Secure Software Development","Security Operations Center (SOC) Practicum","Capstone: Security Assessment"],
+  grad:["Applied Cryptography","Advanced Network Defense","Cyber Risk Management","Security Research Methods","Master's Capstone / Thesis"],
+  lic:"Industry certifications (Security+, CySA+, CISSP) strongly boost employability at every level."},
+ {n:"Data Science",cip:"3070",cat:"Computing",alt:"analytics big data machine learning",
+  d:"Extracting insight from data using statistics, programming, and machine learning.",
+  hs:["Pre-Calculus (Calculus if available)","Statistics","A programming course (recommended)"],
+  intro:["Introduction to Data Science","Programming for Data Analysis (Python/R)","Calculus I","Introductory Statistics"],
+  core:["Probability & Statistical Inference","Data Wrangling & Visualization","Databases & SQL","Linear Algebra","Machine Learning Fundamentals","Calculus II"],
+  adv:["Big Data Systems","Deep Learning","Data Ethics & Privacy","Experimental Design / A-B Testing","Capstone: End-to-End Data Project"],
+  grad:["Statistical Learning Theory","Advanced Machine Learning","Data Engineering at Scale","Domain Analytics Electives","Thesis or Industry Practicum"]},
+ {n:"Web Development & Digital Media",cip:"1108",cat:"Computing",alt:"web design front end",
+  d:"Designing and building websites, web apps, and interactive digital media.",
+  hs:["Algebra II","Art/design or computer electives"],
+  intro:["HTML, CSS & Web Foundations","JavaScript Programming","Digital Design Fundamentals","Introduction to Computing"],
+  core:["Front-End Frameworks","Server-Side Development","Database-Driven Websites","UX/UI Design","Web Accessibility & Standards"],
+  adv:["Full-Stack Project Development","Mobile-First & Responsive Design","APIs & Cloud Deployment","Portfolio Capstone"],
+  grad:["Human-Computer Interaction","Advanced Interactive Media","Emerging Web Technologies","Master's Project"]},
+ {n:"Nursing (RN/BSN)",cip:"5138",cat:"Health",alt:"registered nurse BSN RN healthcare",
+  d:"Preparing licensed nurses to assess, care for, and advocate for patients across healthcare settings.",
+  hs:["Biology & Chemistry","Algebra II","Anatomy/Physiology if offered","CPR certification (helpful)"],
+  intro:["Anatomy & Physiology I–II","Microbiology","Introduction to Nursing / Nursing Fundamentals","Lifespan Human Development","Chemistry for Health Sciences"],
+  core:["Pharmacology","Medical-Surgical Nursing I–II","Health Assessment","Maternal-Newborn Nursing","Pediatric Nursing","Mental Health Nursing"],
+  adv:["Community & Public Health Nursing","Nursing Leadership & Management","Evidence-Based Practice & Research","Clinical Preceptorship / Capstone"],
+  grad:["Advanced Pathophysiology","Advanced Pharmacology","Advanced Health Assessment","Nurse Practitioner or Leadership Specialty Courses","Scholarly Project / Clinical Hours"],
+  lic:"Requires passing the NCLEX-RN exam for licensure; graduate practice (NP) requires national certification."},
+ {n:"Public Health",cip:"5122",cat:"Health",alt:"epidemiology community health MPH",
+  d:"Improving the health of populations through prevention, policy, and community programs.",
+  hs:["Biology","Algebra II & Statistics","Social studies coursework"],
+  intro:["Introduction to Public Health","Human Biology","Introductory Statistics","Health & Society"],
+  core:["Epidemiology","Biostatistics","Environmental Health","Health Policy & Management","Social & Behavioral Health","Global Health"],
+  adv:["Program Planning & Evaluation","Public Health Research Methods","Health Communication","Internship / Capstone Experience"],
+  grad:["Advanced Epidemiology","Advanced Biostatistics","Public Health Leadership","Concentration Courses (e.g., epi, policy, global)","MPH Practicum & Integrative Learning Experience"]},
+ {n:"Health Administration",cip:"5107",cat:"Health",alt:"healthcare management hospital administration",
+  d:"Managing hospitals, clinics, and health systems — the business side of healthcare.",
+  hs:["Algebra II","Business or economics electives","Biology"],
+  intro:["Introduction to Healthcare Systems","Principles of Management","Financial Accounting","Medical Terminology"],
+  core:["Healthcare Finance","Health Law & Ethics","Health Information Systems","Human Resources in Healthcare","Healthcare Economics","Quality Improvement"],
+  adv:["Strategic Planning in Health Organizations","Health Policy","Operations Management","Administrative Internship / Capstone"],
+  grad:["Healthcare Strategy & Marketing","Advanced Health Finance","Population Health Management","Leadership Residency / Capstone (MHA)"]},
+ {n:"Exercise Science / Kinesiology",cip:"3105",cat:"Health",alt:"sports medicine physical therapy prep athletic training",
+  d:"The science of human movement — a common path toward physical therapy, athletic training, and coaching.",
+  hs:["Biology & Chemistry","Algebra II","Physical education / athletics"],
+  intro:["Introduction to Kinesiology","Anatomy & Physiology I–II","General Chemistry","First Aid & CPR"],
+  core:["Biomechanics","Exercise Physiology","Motor Learning & Control","Nutrition for Health & Performance","Statistics for Health Sciences"],
+  adv:["Strength & Conditioning Principles","Exercise Testing & Prescription","Sports Psychology","Internship / Practicum"],
+  grad:["Advanced Exercise Physiology","Research Methods & Statistics","Clinical Biomechanics","Thesis or DPT/AT professional coursework"],
+  lic:"Doctor of Physical Therapy (DPT) and Athletic Training require separate accredited graduate programs and board exams."},
+ {n:"Nutrition & Dietetics",cip:"5131",cat:"Health",alt:"dietitian food science",
+  d:"The science of food and nutrition and its role in health, disease prevention, and performance.",
+  hs:["Biology & Chemistry","Algebra II","Health electives"],
+  intro:["Introduction to Nutrition","General Chemistry I–II","Human Anatomy & Physiology","Food Science Fundamentals"],
+  core:["Human Nutrition & Metabolism","Nutrition Through the Life Cycle","Biochemistry","Community Nutrition","Food Service Systems Management"],
+  adv:["Medical Nutrition Therapy I–II","Nutrition Counseling & Education","Research Methods in Nutrition","Supervised Practice / Capstone"],
+  grad:["Advanced Macronutrient & Micronutrient Metabolism","Clinical Nutrition Practice","Nutrition Research & Thesis","Dietetic Internship Rotations"],
+  lic:"Registered Dietitian Nutritionist (RDN) now requires a graduate degree plus a supervised internship and the CDR exam."},
+ {n:"Pre-Medicine / Biology",cip:"2601",cat:"Science",alt:"biological sciences premed pre-med life science",
+  d:"The study of living organisms — and the standard springboard for medical, dental, and research careers.",
+  hs:["Biology, Chemistry & Physics","Pre-Calculus","AP sciences recommended"],
+  intro:["General Biology I–II with Lab","General Chemistry I–II with Lab","Calculus I or Biostatistics","Introduction to Research"],
+  core:["Genetics","Cell & Molecular Biology","Organic Chemistry I–II with Lab","Ecology & Evolution","Physics I–II","Biochemistry"],
+  adv:["Physiology","Microbiology or Immunology","Advanced Electives (neuro, development, cancer bio)","Senior Thesis / Research Capstone"],
+  grad:["Graduate Seminar in Biology","Advanced Molecular Techniques","Grant Writing & Scientific Communication","Original Thesis / Dissertation Research"],
+  lic:"Medical school (MD/DO) requires the MCAT plus prerequisite coursework typically covered by this major."},
+ {n:"Biochemistry",cip:"2602",cat:"Science",alt:"molecular biology chemistry of life",
+  d:"Chemistry of living systems — proteins, DNA, metabolism — foundational for medicine, pharma, and research.",
+  hs:["Chemistry & Biology","Pre-Calculus / Calculus","Physics"],
+  intro:["General Chemistry I–II with Lab","General Biology I–II","Calculus I–II","Introduction to Scientific Computing"],
+  core:["Organic Chemistry I–II with Lab","Biochemistry I–II","Analytical Chemistry","Genetics & Molecular Biology","Physics I–II"],
+  adv:["Physical Chemistry","Advanced Lab Techniques (spectroscopy, chromatography)","Structural Biology / Enzymology","Undergraduate Research & Thesis"],
+  grad:["Advanced Enzymology & Metabolism","Biophysical Methods","Seminar & Journal Club","Dissertation Research"]},
+ {n:"Chemistry",cip:"4005",cat:"Science",alt:"chem",
+  d:"Matter and its transformations — from synthesis and analysis to materials and medicine.",
+  hs:["Chemistry & Physics","Pre-Calculus / Calculus"],
+  intro:["General Chemistry I–II with Lab","Calculus I–II","Introduction to Chemical Research","General Physics I"],
+  core:["Organic Chemistry I–II with Lab","Analytical Chemistry","Inorganic Chemistry","Physical Chemistry I–II","Instrumental Analysis"],
+  adv:["Advanced Synthesis Lab","Spectroscopy","Elective (polymer, environmental, medicinal chemistry)","Senior Research / Thesis"],
+  grad:["Advanced Organic/Inorganic/Physical Core","Graduate Seminar","Cumulative Exams","Original Dissertation Research"]},
+ {n:"Physics",cip:"4008",cat:"Science",alt:"astrophysics",
+  d:"The fundamental laws of nature — mechanics, electromagnetism, quantum theory, and beyond.",
+  hs:["Physics","Calculus (AP if available)","Computer programming helpful"],
+  intro:["Physics I–II (Mechanics, E&M) with Lab","Calculus I–III","Introduction to Computational Physics","Modern Physics"],
+  core:["Classical Mechanics","Electromagnetic Theory","Quantum Mechanics I–II","Thermodynamics & Statistical Mechanics","Differential Equations & Linear Algebra"],
+  adv:["Advanced Laboratory","Mathematical Methods of Physics","Elective (astro, solid state, optics, particle)","Senior Thesis / Research"],
+  grad:["Graduate Quantum Mechanics","Graduate E&M (Jackson-level)","Statistical Mechanics","Qualifying Exams","Dissertation Research"]},
+ {n:"Mathematics",cip:"2701",cat:"Science",alt:"math applied mathematics",
+  d:"Rigorous study of structure, quantity, and change — pure and applied.",
+  hs:["Pre-Calculus & Calculus","Physics recommended"],
+  intro:["Calculus I–III","Introduction to Proofs / Discrete Math","Linear Algebra","Intro Programming"],
+  core:["Real Analysis I","Abstract Algebra I","Differential Equations","Probability Theory","Numerical Methods"],
+  adv:["Real Analysis II / Topology","Abstract Algebra II","Complex Analysis","Elective (optimization, cryptography, statistics)","Senior Seminar / Thesis"],
+  grad:["Graduate Analysis","Graduate Algebra","Specialty Sequences","Qualifying Exams","Dissertation Research"]},
+ {n:"Statistics",cip:"2705",cat:"Science",alt:"biostatistics statistician",
+  d:"The theory and practice of learning from data under uncertainty.",
+  hs:["Pre-Calculus & Calculus","AP Statistics recommended"],
+  intro:["Calculus I–III","Introductory Statistics","Programming in R/Python","Linear Algebra"],
+  core:["Probability Theory","Mathematical Statistics","Regression Analysis","Experimental Design","Statistical Computing"],
+  adv:["Bayesian Statistics","Multivariate Analysis","Time Series or Machine Learning","Consulting / Capstone Project"],
+  grad:["Advanced Inference","Linear Models Theory","Computational Statistics","Thesis or Applied Project"]},
+ {n:"Environmental Science",cip:"0301",cat:"Science",alt:"natural resources conservation sustainability ecology",
+  d:"Interdisciplinary study of the environment, ecosystems, and sustainable resource management.",
+  hs:["Biology & Chemistry","Algebra II","Environmental or earth science"],
+  intro:["Introduction to Environmental Science","General Biology I","General Chemistry I","Earth Systems / Physical Geology"],
+  core:["Ecology","Environmental Chemistry","GIS & Remote Sensing","Environmental Policy & Law","Statistics for Scientists","Hydrology or Soil Science"],
+  adv:["Conservation Biology","Environmental Impact Assessment","Field Methods Practicum","Senior Capstone / Research"],
+  grad:["Advanced Environmental Systems","Quantitative Methods","Environmental Management Electives","Thesis / Professional Project"]},
+ {n:"Psychology",cip:"4201",cat:"Social Science",alt:"clinical counseling behavioral",
+  d:"The scientific study of mind and behavior — from neurons to social groups.",
+  hs:["Biology","Algebra II & Statistics","AP Psychology if offered"],
+  intro:["Introduction to Psychology","Developmental Psychology","Statistics for Behavioral Sciences","Research Methods in Psychology"],
+  core:["Cognitive Psychology","Abnormal Psychology","Social Psychology","Biological Psychology / Neuroscience","Personality Psychology","Learning & Behavior"],
+  adv:["Psychological Testing & Assessment","Advanced Research Lab","Electives (child, health, forensic, I/O)","Senior Thesis / Capstone"],
+  grad:["Advanced Psychopathology","Psychotherapy Theory & Technique","Advanced Statistics & Measurement","Supervised Clinical Practica","Dissertation Research"],
+  lic:"Practicing as a licensed psychologist requires a doctorate (PhD/PsyD) plus supervised hours and the EPPP exam; counseling licensure (LPC/LMFT) is possible at the master's level."},
+ {n:"Sociology",cip:"4511",cat:"Social Science",alt:"social sciences society",
+  d:"How societies, institutions, and groups shape human life — inequality, culture, organizations.",
+  hs:["Social studies coursework","Algebra II","Strong reading & writing"],
+  intro:["Introduction to Sociology","Social Problems","Statistics for Social Sciences","Sociological Theory (classical)"],
+  core:["Research Methods","Contemporary Sociological Theory","Race & Ethnicity","Social Stratification","Sociology of Family or Education"],
+  adv:["Advanced Data Analysis","Urban or Medical Sociology","Applied Internship","Senior Capstone / Thesis"],
+  grad:["Advanced Theory","Advanced Quantitative & Qualitative Methods","Specialty Seminars","Thesis / Dissertation"]},
+ {n:"Political Science",cip:"4510",cat:"Social Science",alt:"government politics international relations",
+  d:"Power, government, and policy — American politics, comparative systems, international relations, and theory.",
+  hs:["Government/civics & history","Strong writing","Debate or Model UN helpful"],
+  intro:["Introduction to American Government","Introduction to Comparative Politics","Introduction to International Relations","Political Theory Foundations"],
+  core:["Research Methods & Statistics","Constitutional Law","Public Policy Analysis","Political Behavior / Elections","Regional Politics Elective"],
+  adv:["Advanced Seminar in Subfield","Internship (government, campaign, NGO)","Senior Thesis / Capstone"],
+  grad:["Scope & Methods","Graduate Subfield Seminars","Advanced Research Design","Comprehensive Exams & Dissertation"]},
+ {n:"Economics",cip:"4506",cat:"Social Science",alt:"econ",
+  d:"How individuals, firms, and nations allocate scarce resources — theory, data, and policy.",
+  hs:["Pre-Calculus (Calculus recommended)","AP Economics if offered"],
+  intro:["Principles of Microeconomics","Principles of Macroeconomics","Calculus I","Introductory Statistics"],
+  core:["Intermediate Microeconomics","Intermediate Macroeconomics","Econometrics","Calculus II / Math for Economists","Money & Banking or International Trade"],
+  adv:["Advanced Econometrics or Game Theory","Field Electives (labor, development, health, finance)","Senior Thesis / Research Seminar"],
+  grad:["PhD Micro & Macro Theory","Graduate Econometrics","Field Sequences","Dissertation Research"]},
+ {n:"Anthropology",cip:"4502",cat:"Social Science",alt:"archaeology cultural",
+  d:"Human cultures, evolution, language, and material past across time and place.",
+  hs:["Social studies & biology","Foreign language helpful"],
+  intro:["Introduction to Cultural Anthropology","Biological Anthropology","Introduction to Archaeology","Linguistic Anthropology"],
+  core:["Anthropological Theory","Ethnographic Research Methods","Regional Ethnography Elective","Statistics or Quantitative Reasoning"],
+  adv:["Field School / Fieldwork Experience","Advanced Topical Seminar","Senior Thesis / Capstone"],
+  grad:["Graduate Core Theory","Advanced Methods","Area Specialization","Fieldwork & Dissertation"]},
+ {n:"Criminal Justice",cip:"4301",cat:"Social Science",alt:"law enforcement policing corrections criminology",
+  d:"Crime, law, policing, courts, and corrections — preparation for law enforcement, legal, and policy careers.",
+  hs:["Government/civics","Strong writing","Physical fitness (for sworn roles)"],
+  intro:["Introduction to Criminal Justice","Criminology","Introduction to Policing","Criminal Law"],
+  core:["Criminal Procedure","Corrections Systems","Juvenile Justice","Ethics in Criminal Justice","Research Methods & Statistics"],
+  adv:["Criminal Investigations","Cybercrime or Forensic Science Survey","Internship (agency placement)","Senior Capstone"],
+  grad:["Advanced Criminological Theory","Justice Policy Analysis","Advanced Research Methods","Thesis / Applied Project"]},
+ {n:"Social Work",cip:"4407",cat:"Social Science",alt:"MSW LCSW human services",
+  d:"Helping individuals, families, and communities navigate and overcome adversity — practice and policy.",
+  hs:["Social studies & psychology electives","Volunteer/community experience"],
+  intro:["Introduction to Social Work","Human Behavior & Social Environment I","Introduction to Psychology & Sociology","Social Welfare Policy Foundations"],
+  core:["Social Work Practice with Individuals","Practice with Families & Groups","Human Behavior & Social Environment II","Research Methods","Diversity & Social Justice"],
+  adv:["Practice with Communities & Organizations","Field Practicum I–II (400+ hours)","Senior Integrative Seminar"],
+  grad:["Advanced Clinical Practice","Psychopathology for Social Workers","Advanced Field Placement (900+ hours)","Specialization Electives (clinical, macro, school)"],
+  lic:"Clinical practice (LCSW) requires an MSW, supervised post-graduate hours, and the ASWB clinical exam."},
+ {n:"Business Administration",cip:"5202",cat:"Business",alt:"management MBA business",
+  d:"Broad preparation in managing organizations — strategy, operations, people, and money.",
+  hs:["Algebra II","Business or economics electives","Communication skills"],
+  intro:["Introduction to Business","Financial Accounting","Managerial Accounting","Microeconomics & Macroeconomics","Business Statistics"],
+  core:["Principles of Management","Principles of Marketing","Corporate Finance","Business Law & Ethics","Operations Management","Management Information Systems"],
+  adv:["Organizational Behavior","International Business","Business Analytics","Strategic Management (Capstone)"],
+  grad:["MBA Core: Leadership, Finance, Marketing, Operations","Data-Driven Decision Making","Electives / Concentration","Capstone Strategy Simulation or Consulting Project"]},
+ {n:"Accounting",cip:"5203",cat:"Business",alt:"CPA audit tax",
+  d:"The language of business — financial reporting, auditing, and tax.",
+  hs:["Algebra II","Business/accounting electives","Detail orientation"],
+  intro:["Financial Accounting","Managerial Accounting","Microeconomics","Business Statistics","Business Law I"],
+  core:["Intermediate Accounting I–II","Cost Accounting","Individual Income Tax","Accounting Information Systems","Corporate Finance"],
+  adv:["Auditing & Assurance","Advanced Accounting","Corporate & Partnership Tax","Data Analytics for Accounting","Capstone / CPA Review"],
+  grad:["Advanced Auditing","Tax Research","Financial Statement Analysis","Master's of Accountancy Capstone (meets 150-hour CPA rule)"],
+  lic:"CPA licensure requires 150 credit hours (bachelor's + ~30 extra, often a MAcc), the CPA exam, and experience."},
+ {n:"Finance",cip:"5208",cat:"Business",alt:"investments banking financial",
+  d:"Valuing assets and managing money — corporate finance, investments, and markets.",
+  hs:["Algebra II & Pre-Calculus","Economics electives"],
+  intro:["Financial Accounting","Microeconomics & Macroeconomics","Business Statistics","Introduction to Financial Markets"],
+  core:["Corporate Finance","Investments","Financial Modeling & Excel","Intermediate Accounting Survey","Money, Banking & Financial Institutions"],
+  adv:["Derivatives & Risk Management","Portfolio Management","International Finance","Valuation Capstone"],
+  grad:["Advanced Corporate Finance","Asset Pricing","Quantitative Methods in Finance","Applied Finance Project (MSF/MBA)"],
+  lic:"Many roles pursue CFA charter (3 exams) or securities licenses (SIE/Series 7) after graduation."},
+ {n:"Marketing",cip:"5214",cat:"Business",alt:"advertising branding digital marketing",
+  d:"Understanding customers and creating demand — brand, digital, analytics, and strategy.",
+  hs:["Algebra II","Art/media or business electives","Communication skills"],
+  intro:["Principles of Marketing","Introduction to Business","Business Statistics","Consumer Psychology Foundations"],
+  core:["Consumer Behavior","Marketing Research","Digital & Social Media Marketing","Integrated Marketing Communications","Sales & Negotiation"],
+  adv:["Marketing Analytics","Brand Management","Global Marketing","Capstone: Marketing Strategy Plan"],
+  grad:["Marketing Strategy (graduate)","Customer Analytics & CRM","New Product Development","Applied Client Project"]},
+ {n:"Human Resource Management",cip:"5210",cat:"Business",alt:"HR personnel talent",
+  d:"Attracting, developing, and retaining talent — the people side of organizations.",
+  hs:["Business electives","Psychology helpful","Communication skills"],
+  intro:["Introduction to Business","Principles of Management","Introduction to Psychology","Business Statistics"],
+  core:["Human Resource Management","Compensation & Benefits","Talent Acquisition & Staffing","Training & Development","Employment Law"],
+  adv:["Labor Relations","HR Analytics","Organizational Development","HR Capstone / Internship"],
+  grad:["Strategic Human Capital","Advanced Employment Law & Ethics","Organizational Change Leadership","Master's Capstone (SHRM-aligned)"],
+  lic:"SHRM-CP / PHR certifications strengthen advancement after graduation."},
+ {n:"Entrepreneurship",cip:"5207",cat:"Business",alt:"startup small business innovation",
+  d:"Launching and growing new ventures — opportunity, funding, and execution.",
+  hs:["Business electives","Any hands-on venture (club, side business)"],
+  intro:["Introduction to Entrepreneurship","Financial Accounting","Principles of Marketing","Business Statistics"],
+  core:["Opportunity Recognition & Ideation","Entrepreneurial Finance","Small Business Management","Business Model Design","Business Law for Startups"],
+  adv:["Venture Launch Practicum","Growth & Scaling Strategies","Social Entrepreneurship or Family Business","New Venture Capstone (pitch)"],
+  grad:["Venture Capital & Private Equity","Innovation Management","Lean Startup Lab","Master's Venture Project"]},
+ {n:"Supply Chain Management",cip:"5202",cat:"Business",alt:"logistics operations procurement",
+  d:"Moving products and information from source to customer — logistics, procurement, and operations.",
+  hs:["Algebra II","Business or statistics electives"],
+  intro:["Introduction to Supply Chain Management","Business Statistics","Financial Accounting","Microeconomics"],
+  core:["Operations Management","Logistics & Transportation","Procurement & Sourcing","Inventory & Demand Planning","ERP Systems"],
+  adv:["Supply Chain Analytics","Global Supply Chains","Lean & Six Sigma","Capstone / Industry Project"],
+  grad:["Supply Chain Strategy","Advanced Analytics & Optimization","Risk & Resilience","Master's Practicum"]},
+ {n:"Mechanical Engineering",cip:"1419",cat:"Engineering",alt:"ME machines robotics",
+  d:"Design and analysis of mechanical systems — machines, energy, robotics, and manufacturing.",
+  hs:["Calculus (AP recommended)","Physics & Chemistry","Drafting/CAD helpful"],
+  intro:["Calculus I–III","Physics I–II (Mechanics, E&M)","General Chemistry","Engineering Graphics & CAD","Introduction to Engineering"],
+  core:["Statics & Dynamics","Mechanics of Materials","Thermodynamics I–II","Fluid Mechanics","Materials Science","Differential Equations"],
+  adv:["Machine Design","Heat Transfer","Control Systems","Manufacturing Processes","Senior Design Capstone I–II"],
+  grad:["Advanced Thermofluids or Mechanics","Finite Element Analysis","Graduate Electives (robotics, energy)","Thesis / Dissertation Research"],
+  lic:"FE exam at graduation → PE license after ~4 years of practice for public-facing engineering work."},
+ {n:"Electrical Engineering",cip:"1410",cat:"Engineering",alt:"EE electronics circuits power",
+  d:"Circuits, signals, power, and embedded systems — the backbone of modern technology.",
+  hs:["Calculus","Physics","Electronics or programming helpful"],
+  intro:["Calculus I–III","Physics I–II","Introduction to Electrical Engineering","Programming for Engineers","Differential Equations"],
+  core:["Circuit Analysis I–II","Digital Logic Design","Signals & Systems","Electronics I–II","Electromagnetics","Linear Algebra"],
+  adv:["Control Systems","Embedded Systems / Microprocessors","Power Systems or Communications","VLSI or DSP Elective","Senior Design Capstone"],
+  grad:["Advanced Signal Processing","Advanced Electronics/Power/Systems Track","Graduate Research Seminar","Thesis / Dissertation"],
+  lic:"FE/PE licensure path available; many EEs pursue MS for specialization."},
+ {n:"Civil Engineering",cip:"1408",cat:"Engineering",alt:"structural construction infrastructure",
+  d:"Designing infrastructure — buildings, bridges, water systems, and transportation.",
+  hs:["Calculus","Physics & Chemistry","Drafting/CAD helpful"],
+  intro:["Calculus I–III","Physics I–II","General Chemistry","Engineering Graphics & Surveying","Introduction to Civil Engineering"],
+  core:["Statics & Dynamics","Mechanics of Materials","Fluid Mechanics & Hydraulics","Soil Mechanics / Geotechnical","Structural Analysis","Differential Equations"],
+  adv:["Reinforced Concrete or Steel Design","Transportation Engineering","Water Resources & Environmental Engineering","Construction Management","Senior Design Capstone"],
+  grad:["Advanced Structural/Geotech/Water Track","Finite Element Methods","Graduate Design Studio","Thesis / Dissertation"],
+  lic:"FE exam then PE license is essentially required for professional civil practice."},
+ {n:"Computer Engineering",cip:"1409",cat:"Engineering",alt:"embedded hardware",
+  d:"Where hardware meets software — processors, embedded systems, and digital design.",
+  hs:["Calculus","Physics","Programming experience recommended"],
+  intro:["Calculus I–III","Physics I–II","Intro Programming & Data Structures","Digital Logic Design","Intro to ECE"],
+  core:["Circuit Analysis","Computer Architecture","Microprocessors & Embedded Systems","Signals & Systems","Operating Systems","Discrete Math"],
+  adv:["VLSI Design","Real-Time / IoT Systems","Computer Networks","Hardware-Software Codesign","Senior Capstone"],
+  grad:["Advanced Computer Architecture","Embedded Machine Learning","Graduate Electives","Thesis / Dissertation"]},
+ {n:"Chemical Engineering",cip:"1407",cat:"Engineering",alt:"process engineering",
+  d:"Turning chemistry into industrial-scale processes — energy, pharma, materials, and food.",
+  hs:["Calculus","Chemistry & Physics"],
+  intro:["Calculus I–III","General Chemistry I–II","Physics I–II","Material & Energy Balances","Intro to Chemical Engineering"],
+  core:["Thermodynamics","Fluid Mechanics","Heat & Mass Transfer","Organic Chemistry","Chemical Reaction Engineering","Differential Equations"],
+  adv:["Separations / Unit Operations Lab","Process Control","Process Design & Economics","Senior Design Capstone"],
+  grad:["Advanced Transport Phenomena","Advanced Reaction Engineering","Graduate Electives (bio, energy, materials)","Thesis / Dissertation"]},
+ {n:"Aerospace Engineering",cip:"1402",cat:"Engineering",alt:"aeronautical astronautical aviation engineering",
+  d:"Flight vehicles and spacecraft — aerodynamics, propulsion, structures, and controls.",
+  hs:["Calculus","Physics","CAD or robotics helpful"],
+  intro:["Calculus I–III","Physics I–II","Introduction to Aerospace Engineering","Engineering Graphics & CAD","Statics"],
+  core:["Aerodynamics I–II","Flight Dynamics & Control","Aerospace Structures","Propulsion","Thermodynamics","Differential Equations"],
+  adv:["Spacecraft or Aircraft Design","Orbital Mechanics","Advanced Controls","Senior Design Capstone (build/fly)"],
+  grad:["Advanced Aerodynamics/Propulsion/Structures","Computational Fluid Dynamics","Graduate Research","Thesis / Dissertation"]},
+ {n:"Elementary Education",cip:"1312",cat:"Education",alt:"teaching teacher K-6 early childhood",
+  d:"Preparing licensed teachers for elementary classrooms (typically K–6).",
+  hs:["Strong core academics","Experience with children (tutoring, camps)"],
+  intro:["Introduction to Education","Child Development","Educational Psychology","Foundations of Literacy"],
+  core:["Methods: Teaching Reading & Language Arts","Methods: Elementary Math","Methods: Science & Social Studies","Classroom Management","Assessment of Learning","Teaching Diverse & Exceptional Learners"],
+  adv:["Educational Technology","Practicum Field Experiences","Student Teaching (full semester)","edTPA / Licensure Portfolio"],
+  grad:["Curriculum & Instruction (M.Ed.)","Literacy or STEM Specialist Courses","Action Research in the Classroom","Capstone / National Board Prep"],
+  lic:"Requires state teaching license: approved program, student teaching, and Praxis/state exams."},
+ {n:"Secondary Education",cip:"1312",cat:"Education",alt:"high school teaching 7-12",
+  d:"Preparing licensed teachers for middle and high school in a subject specialty.",
+  hs:["Strength in intended subject area","Tutoring or mentoring experience"],
+  intro:["Introduction to Education","Adolescent Development","Educational Psychology","Subject-Area Foundation Courses"],
+  core:["Content-Area Methods (your subject)","Literacy Across the Curriculum","Classroom Management","Assessment & Data Literacy","Teaching Diverse Learners","Subject-Area Major Coursework"],
+  adv:["Educational Technology","Clinical Field Experiences","Student Teaching (full semester)","Licensure Exams & Portfolio"],
+  grad:["Advanced Pedagogy (M.Ed./MAT)","Curriculum Design","Research in Education","Capstone / Certification Coursework"],
+  lic:"Requires state teaching license in the subject area (Praxis/state exams + student teaching)."},
+ {n:"Special Education",cip:"1310",cat:"Education",alt:"SPED exceptional learners",
+  d:"Teaching and advocating for students with disabilities across settings and grade levels.",
+  hs:["Experience with children/disability communities","Strong core academics"],
+  intro:["Introduction to Special Education","Child & Adolescent Development","Educational Psychology","Foundations of Literacy & Numeracy"],
+  core:["Characteristics of Exceptional Learners","IEP Development & Special Ed Law","Behavior Management & PBIS","Assessment in Special Education","Assistive Technology"],
+  adv:["High-Incidence & Low-Incidence Methods","Collaboration with Families & Teams","Practicum Placements","Student Teaching in SPED Settings"],
+  grad:["Advanced Behavior Analysis (BCBA track)","Autism & Severe Disabilities Seminar","SPED Research & Law Update","M.Ed. Capstone"],
+  lic:"Requires state SPED teaching license; BCBA certification is a common master's-level add-on."},
+ {n:"English",cip:"2301",cat:"Humanities",alt:"literature writing creative writing",
+  d:"Literature, critical analysis, and writing — a classic foundation for law, media, and education.",
+  hs:["AP English/Literature","Broad reading","Foreign language helpful"],
+  intro:["Introduction to Literary Studies","British Literature Survey","American Literature Survey","College Composition & Rhetoric"],
+  core:["Shakespeare or Early Literature","Literary Theory & Criticism","World / Multicultural Literature","Advanced Composition or Creative Writing","Linguistics or History of English"],
+  adv:["Single-Author or Period Seminar","Advanced Creative Writing Workshop","Digital Humanities or Publishing Elective","Senior Thesis / Capstone Seminar"],
+  grad:["Graduate Literary Theory","Period Specialization Seminars","MFA Workshops (creative track)","Thesis / Dissertation"]},
+ {n:"History",cip:"5401",cat:"Humanities",alt:"historian",
+  d:"Investigating the past through evidence and argument — preparation for law, policy, museums, and teaching.",
+  hs:["AP History courses","Strong writing","Foreign language helpful"],
+  intro:["World History Survey I–II","U.S. History Survey I–II","Introduction to Historical Methods","College Composition"],
+  core:["Historiography","Regional Field Courses (Europe, Asia, Africa, Americas)","Thematic Course (war, gender, science, religion)","Foreign Language (intermediate)"],
+  adv:["Research Seminar with Primary Sources","Public History or Archival Internship","Senior Thesis"],
+  grad:["Graduate Historiography","Field Readings Seminars","Comprehensive Exams","Dissertation Research"]},
+ {n:"Communication & Media Studies",cip:"0901",cat:"Humanities",alt:"communications media PR public relations",
+  d:"How messages move people — interpersonal, organizational, and mass communication.",
+  hs:["Speech/debate, journalism, or media electives","Strong writing"],
+  intro:["Introduction to Communication","Public Speaking","Media & Society","Writing for Media"],
+  core:["Communication Theory","Interpersonal Communication","Organizational Communication","Communication Research Methods","Persuasion"],
+  adv:["Strategic Communication / PR Campaigns","Digital Media Production","Internship","Senior Capstone"],
+  grad:["Advanced Communication Theory","Quantitative & Qualitative Methods","Specialty Seminars","Thesis / Professional Project"]},
+ {n:"Journalism",cip:"0904",cat:"Humanities",alt:"news reporting broadcast",
+  d:"Reporting, verifying, and telling true stories across print, broadcast, and digital platforms.",
+  hs:["School newspaper/yearbook","Strong writing","Current-events fluency"],
+  intro:["Introduction to Journalism","News Writing & Reporting","Media Law & Ethics Foundations","Multimedia Storytelling Basics"],
+  core:["Advanced Reporting","Editing & Fact-Checking","Broadcast or Podcast Production","Data Journalism","Photojournalism / Visual Storytelling"],
+  adv:["Investigative Reporting","Specialized Beat Reporting","Newsroom Internship","Senior Portfolio Capstone"],
+  grad:["Advanced Investigative Methods","Media Innovation & Audience Analytics","Professional Master's Project"]},
+ {n:"Graphic Design",cip:"5004",cat:"Arts",alt:"visual design UX design communication design",
+  d:"Visual communication — branding, typography, digital products, and print.",
+  hs:["Art & design courses","Portfolio development","Computer graphics tools"],
+  intro:["Design Foundations (2D/3D)","Drawing I","Typography I","Digital Tools (Adobe Creative Suite)","History of Graphic Design"],
+  core:["Typography II","Branding & Identity Design","Interaction / UX Design","Motion Graphics","Image-Making & Illustration"],
+  adv:["Design Studio (client projects)","Portfolio Development","Professional Practice Internship","Senior Exhibition / Capstone"],
+  grad:["Graduate Design Studio","Design Research & Theory","MFA Thesis Project & Exhibition"],
+  lic:"Admission usually requires a portfolio; MFA is the terminal degree for teaching design."},
+ {n:"Music",cip:"5009",cat:"Arts",alt:"music performance music education",
+  d:"Performance, theory, and history — applied study on your instrument or voice.",
+  hs:["Private lessons & ensembles","Music theory basics","Audition preparation"],
+  intro:["Music Theory I–II","Aural Skills I–II","Applied Lessons (instrument/voice)","Ensemble Participation","Class Piano"],
+  core:["Music Theory III–IV","Music History & Literature I–II","Conducting","Applied Lessons (upper division)","Ensembles (continued)"],
+  adv:["Senior Recital","Orchestration or Composition Elective","Pedagogy in Applied Area","Music Technology"],
+  grad:["Graduate Theory & Analysis","Performance Practice / Literature Seminars","Graduate Recitals","DMA Document or PhD Dissertation"],
+  lic:"Admission requires an audition at nearly all levels; music education adds state teacher licensure."},
+ {n:"Film & Media Production",cip:"5006",cat:"Arts",alt:"cinema video filmmaking",
+  d:"Writing, shooting, and editing moving images for screen and streaming.",
+  hs:["Media/video electives","A reel of personal projects helps"],
+  intro:["Introduction to Film Studies","Media Production I (camera, sound, edit)","Screenwriting Fundamentals","History of Cinema"],
+  core:["Cinematography","Editing & Post-Production","Directing","Producing & Production Management","Sound Design"],
+  adv:["Advanced Production Workshop","Documentary or Narrative Specialization","Industry Internship","Senior Thesis Film"],
+  grad:["Graduate Production Workshops","Advanced Screenwriting","MFA Thesis Film"]},
+ {n:"Architecture",cip:"0402",cat:"Arts",alt:"architectural design buildings",
+  d:"Designing the built environment — studios, structures, history, and professional practice.",
+  hs:["Physics & Pre-Calculus","Art/drafting courses","Portfolio helpful"],
+  intro:["Architectural Design Studio I–II","Architectural Drawing & Representation","History of Architecture I–II","Calculus & Physics"],
+  core:["Design Studios III–VI (sequential)","Structures I–II","Building Technology & Materials","Environmental Systems","Digital Modeling (BIM)"],
+  adv:["Comprehensive Design Studio","Urban Design or Sustainable Design Elective","Professional Practice","Thesis / Final Studio"],
+  grad:["M.Arch Advanced Studios","Advanced Building Science","Research Thesis / Design Thesis"],
+  lic:"Licensure requires a NAAB-accredited degree (B.Arch or M.Arch), AXP experience hours, and the ARE exams."},
+ {n:"Paralegal / Legal Studies",cip:"2203",cat:"Law & Public Service",alt:"pre-law legal assistant",
+  d:"The workings of law and legal process — a career path in itself and a pre-law foundation.",
+  hs:["Government/civics","Strong reading & writing"],
+  intro:["Introduction to Law & Legal Systems","Legal Research & Writing I","Civil Procedure Basics","Ethics for Legal Professionals"],
+  core:["Contracts","Torts","Criminal Law & Procedure","Legal Research & Writing II","Family or Real Estate Law"],
+  adv:["Litigation & Trial Preparation","Law Office Technology","Internship (firm, court, agency)","Capstone Portfolio"],
+  grad:["(Pre-law path) Law school J.D.: LSAT, 3-year doctoral professional degree","Master of Legal Studies option for non-lawyers"],
+  lic:"Becoming an attorney requires a J.D. and the bar exam; paralegals may add NALA/NFPA certification."},
+ {n:"Public Administration",cip:"4404",cat:"Law & Public Service",alt:"government management nonprofit MPA policy",
+  d:"Managing public agencies and nonprofits — budgeting, policy, and public service leadership.",
+  hs:["Government/civics","Community involvement"],
+  intro:["Introduction to Public Administration","American Government","Microeconomics","Statistics for Public Affairs"],
+  core:["Public Budgeting & Finance","Public Policy Analysis","Organizational Behavior in Public Agencies","Administrative Law","Nonprofit Management"],
+  adv:["Program Evaluation","Urban & Regional Governance","Internship in Government/Nonprofit","Senior Capstone"],
+  grad:["MPA Core: Public Management, Budgeting, Policy Analysis","Quantitative Methods for Public Affairs","Concentration Electives","Capstone Consulting Project"]},
+ {n:"Culinary Arts",cip:"1205",cat:"Trades & Applied",alt:"chef cooking baking pastry",
+  d:"Professional cooking and kitchen management — technique, safety, and service.",
+  hs:["Family & consumer science electives","Food-service work experience helps"],
+  intro:["Culinary Fundamentals I (knife skills, stocks, sauces)","Food Safety & Sanitation (ServSafe)","Baking & Pastry Fundamentals","Culinary Math"],
+  core:["Culinary Fundamentals II (proteins, garde manger)","World Cuisines","Menu Planning & Cost Control","Nutrition for Culinary Professionals","Dining Room Service"],
+  adv:["Advanced Line & Banquet Production","Restaurant Practicum (student-run restaurant)","Externship in Industry","Capstone Menu Project"],
+  grad:["(Advancement path) B.S. Hospitality/Food Service Management → M.S. Hospitality or MBA"],
+  lic:"ServSafe Manager certification is standard; ACF certifications (CSC, CEC) mark career progression."},
+ {n:"Automotive Technology",cip:"4706",cat:"Trades & Applied",alt:"mechanic auto repair diesel",
+  d:"Diagnosing and repairing modern vehicles — engines, electronics, and drivetrains.",
+  hs:["Auto shop or industrial tech","Physics helpful"],
+  intro:["Introduction to Automotive Technology","Shop Safety & Tools","Engine Repair Fundamentals","Automotive Electrical I"],
+  core:["Brakes & Chassis Systems","Steering & Suspension","Automotive Electrical II / Electronics","Engine Performance & Diagnostics","Heating & Air Conditioning"],
+  adv:["Automatic Transmissions & Transaxles","Advanced Driveability & Emissions","Hybrid/EV Systems","Cooperative Work Experience"],
+  grad:["(Advancement path) B.S. Automotive/Transportation Management for shop leadership roles"],
+  lic:"ASE certifications (A1–A9) are the industry standard credential; many programs prep you for them directly."},
+ {n:"Welding Technology",cip:"4805",cat:"Trades & Applied",alt:"welder fabrication",
+  d:"Joining metals with precision — structural, pipe, and fabrication welding.",
+  hs:["Industrial arts/shop","Geometry"],
+  intro:["Welding Safety & Blueprint Reading","Oxy-Fuel Cutting & Welding","Shielded Metal Arc Welding (SMAW) I","Welding Math & Measurement"],
+  core:["SMAW II (all positions)","Gas Metal Arc Welding (GMAW/MIG)","Gas Tungsten Arc Welding (GTAW/TIG)","Flux-Cored Arc Welding","Weld Inspection & Testing"],
+  adv:["Pipe Welding","Fabrication Projects","Certification Test Preparation (AWS)","Field Externship"],
+  grad:["(Advancement path) Welding Inspection (CWI), Welding Engineering Technology B.S."],
+  lic:"AWS certifications (e.g., Certified Welder, CWI) are the credentials employers look for."},
+ {n:"HVAC Technology",cip:"4702",cat:"Trades & Applied",alt:"heating air conditioning refrigeration",
+  d:"Installing and servicing heating, ventilation, air-conditioning, and refrigeration systems.",
+  hs:["Industrial tech electives","Algebra"],
+  intro:["Fundamentals of HVAC/R","Electricity for HVAC","Refrigeration Principles","Safety & EPA 608 Prep"],
+  core:["Residential Air Conditioning","Heating Systems (gas, electric, heat pump)","Sheet Metal & Ductwork","HVAC Controls","Load Calculation & System Design"],
+  adv:["Commercial Refrigeration","Building Automation Systems","Troubleshooting Practicum","Field Internship"],
+  grad:["(Advancement path) B.S. Facilities/Construction Management or Energy Management"],
+  lic:"EPA Section 608 certification is federally required to handle refrigerants; NATE certification is valued."},
+ {n:"Aviation / Professional Pilot",cip:"4901",cat:"Trades & Applied",alt:"pilot flight aeronautics",
+  d:"Flight training integrated with aeronautical science — the college route to the airline cockpit.",
+  hs:["Algebra II & Physics","Medical fitness (FAA medical certificate)"],
+  intro:["Private Pilot Ground School & Flight Lab","Introduction to Aeronautics","Aviation Weather","Aviation Regulations"],
+  core:["Instrument Rating Ground & Flight","Commercial Pilot Ground & Flight","Aerodynamics","Aircraft Systems","Crew Resource Management"],
+  adv:["Multi-Engine Rating","Certified Flight Instructor (CFI) Courses","Turbine/Jet Transition & Simulators","Airline Operations Capstone"],
+  grad:["(Advancement path) M.S. Aviation Safety/Management for training, safety, and airline leadership roles"],
+  lic:"FAA certificates are earned in sequence (Private → Instrument → Commercial → CFI → ATP); a bachelor's allows a Restricted ATP at 1,000 flight hours."},
+ {n:"Hospitality Management",cip:"5209",cat:"Business",alt:"hotel restaurant tourism event",
+  d:"Running hotels, restaurants, resorts, and events — service operations and business strategy.",
+  hs:["Business electives","Customer-service work experience"],
+  intro:["Introduction to Hospitality Industry","Financial Accounting","Food & Beverage Operations","Guest Service Management"],
+  core:["Hotel & Lodging Operations","Hospitality Marketing","Event Planning & Management","Hospitality Law","Revenue Management"],
+  adv:["Hospitality Analytics","International Tourism","Industry Internship (400+ hours)","Senior Strategy Capstone"],
+  grad:["Hospitality Strategy (M.S./MBA)","Service Innovation","Advanced Revenue & Asset Management","Industry Consulting Project"]},
+ {n:"Early Childhood Education",cip:"1312",cat:"Education",alt:"preschool pre-k childcare",
+  d:"Teaching and caring for children from birth through early elementary — a licensure and childcare career path.",
+  hs:["Child development electives","Experience with young children"],
+  intro:["Introduction to Early Childhood Education","Child Growth & Development","Health, Safety & Nutrition for Young Children","Observation & Assessment"],
+  core:["Early Language & Literacy","Early Math & Science Experiences","Guidance of Young Children","Curriculum Development (play-based)","Children with Exceptionalities"],
+  adv:["Family & Community Engagement","Practicum in Preschool Settings","Student Teaching / CDA-to-degree Capstone"],
+  grad:["Advanced Child Development (M.Ed.)","Early Intervention Seminar","Leadership in Early Childhood Programs","Capstone Research"],
+  lic:"Public pre-K/K teaching requires a state license; the CDA credential serves childcare settings at the certificate level."},
+ {n:"Pharmacy (Pre-Pharmacy → PharmD)",cip:"5120",cat:"Health",prof:["4 years","PharmD"],alt:"pharmacist pharmaceutical",
+  d:"Medication experts — the PharmD professional doctorate is the required practice degree.",
+  hs:["Biology & Chemistry","Pre-Calculus/Calculus"],
+  intro:["General Biology I–II","General Chemistry I–II","Calculus I","Microeconomics & Communication Electives"],
+  core:["Organic Chemistry I–II","Microbiology","Human Anatomy & Physiology","Physics I","Biochemistry","Statistics"],
+  adv:["(Entry to PharmD, typically after 2–4 pre-pharmacy years)","Pharmaceutics & Pharmacokinetics","Pharmacology & Medicinal Chemistry","Pharmacy Law & Ethics"],
+  grad:["Therapeutics Sequences","Community & Hospital Practice Experiences (IPPE)","Advanced Pharmacy Practice Experiences (APPE rotations)","PharmD Capstone & NAPLEX Prep"],
+  lic:"Practice requires the PharmD, NAPLEX, and state law (MPJE) exams; PCAT/interviews for admission at many schools."},
+ {n:"Dental Hygiene",cip:"5106",cat:"Health",alt:"dental hygienist oral health",
+  d:"Licensed clinicians who clean teeth, screen for disease, and educate patients.",
+  hs:["Biology & Chemistry","Algebra II","Observation hours in a dental office help"],
+  intro:["Anatomy & Physiology I–II","Microbiology","Chemistry for Health Sciences","Introduction to Dental Hygiene"],
+  core:["Oral Anatomy & Embryology","Dental Radiology","Periodontology","Clinical Dental Hygiene I–III","Dental Materials","Pharmacology for Dental Hygiene"],
+  adv:["Community Dental Health","Pain Management / Local Anesthesia","Clinical Practicum (patient care)","Board Exam Preparation"],
+  grad:["(Advancement path) B.S. completion → M.S. Dental Hygiene for education, public health, and leadership roles"],
+  lic:"Requires an accredited program, the National Board Dental Hygiene Exam, and state clinical licensure."},
+ {n:"Radiologic Technology / Medical Imaging",cip:"5109",cat:"Health",alt:"xray x-ray sonography imaging tech",
+  d:"Producing diagnostic images — X-ray, CT, MRI, and ultrasound — as a licensed technologist.",
+  hs:["Biology & Physics","Algebra II"],
+  intro:["Anatomy & Physiology I–II","Introduction to Radiologic Science","Medical Terminology","Patient Care & Safety"],
+  core:["Radiographic Procedures I–III","Radiation Physics","Radiation Protection & Biology","Image Analysis","Clinical Education I–IV (hospital rotations)"],
+  adv:["Advanced Modality Intro (CT/MRI/Sonography)","Pathology for Imaging","Capstone & ARRT Registry Review"],
+  grad:["(Advancement path) B.S. Imaging Sciences → M.S. for education, administration, or advanced practice"],
+  lic:"ARRT registry exam and state licensure are required to practice."},
+ {n:"Fire Science / EMS",cip:"4302",cat:"Law & Public Service",alt:"firefighter fire technology paramedic emergency",
+  d:"Fire prevention, suppression, and emergency medical response.",
+  hs:["Physical fitness","Biology & chemistry basics","EMT-B (often earned in program)"],
+  intro:["Introduction to Fire Science","Fire Behavior & Combustion","Building Construction for Fire Protection","Emergency Medical Technician (EMT) Course"],
+  core:["Fire Prevention & Inspection","Fire Protection Systems","Hazardous Materials","Firefighting Tactics & Strategy","Fire Academy Skills (if included)"],
+  adv:["Fire Investigation","Fire & Emergency Services Administration","Paramedic Coursework (optional track)","Internship / Ride-Alongs"],
+  grad:["(Advancement path) B.S. Fire Administration → Executive Fire Officer / M.P.A. for chief-level roles"],
+  lic:"Firefighter I/II, EMT, and paramedic certifications are state-regulated; hiring includes physical (CPAT) and civil-service exams."},
+ {n:"Veterinary Technology / Pre-Veterinary",cip:"5108",cat:"Health",alt:"vet tech animal science veterinarian",
+  d:"Clinical care for animals — vet tech licensure at the associate level, or the pre-vet path to the DVM.",
+  hs:["Biology & Chemistry","Animal experience (shelter, farm, clinic)"],
+  intro:["Introduction to Veterinary Technology","Animal Anatomy & Physiology","Medical Terminology","Animal Handling & Restraint"],
+  core:["Veterinary Pharmacology","Veterinary Nursing & Clinical Skills","Laboratory & Diagnostic Procedures","Anesthesia & Surgical Assisting","Radiology for Technicians"],
+  adv:["Large Animal / Exotic Rotations","Clinical Externship","VTNE Board Review Capstone"],
+  grad:["(Pre-vet path) B.S. Animal Science/Biology → DVM (4-year professional doctorate) → NAVLE licensure"],
+  lic:"Vet techs take the VTNE; veterinarians need the DVM and NAVLE."},
+ {n:"Interior Design",cip:"5004",cat:"Arts",alt:"interiors space planning",
+  d:"Designing functional, beautiful interior spaces for homes, offices, and public places.",
+  hs:["Art & design courses","Drafting/CAD helpful","Portfolio development"],
+  intro:["Design Foundations","Drafting & Drawing for Interiors","Color Theory","History of Interiors & Furniture"],
+  core:["Interior Design Studio I–III","Materials & Finishes","Space Planning","CAD & Revit for Interiors","Lighting Design"],
+  adv:["Commercial Design Studio","Building Codes & ADA","Professional Practice & Internship","Senior Portfolio Capstone"],
+  grad:["Graduate Design Studio","Evidence-Based Design Research","MFA/MS Thesis"],
+  lic:"NCIDQ certification (after a CIDA-accredited degree + experience) is the professional credential."},
+ {n:"Computer Programming (Applied)",cip:"1102",cat:"Computing",alt:"software developer bootcamp coding certificate",
+  d:"Hands-on software development — a faster, applied alternative to a full CS degree.",
+  hs:["Algebra II","Any coding exposure"],
+  intro:["Programming Logic & Design","Introduction to Python or Java","Web Fundamentals (HTML/CSS/JS)","Version Control & Dev Tools"],
+  core:["Object-Oriented Programming","Data Structures (applied)","Database Programming (SQL)","Web or Mobile Application Development"],
+  adv:["Framework Development Project","Cloud Deployment Basics","Team Software Project / Portfolio Capstone"],
+  grad:["(Advancement path) transfer to B.S. Computer Science or Software Engineering"]},
+ {n:"Cosmetology",cip:"1204",cat:"Trades & Applied",alt:"hair stylist esthetician barber beauty",
+  d:"Hair, skin, and nail services — a state-licensed trade with salon and entrepreneurship paths.",
+  hs:["No specific courses required — art electives help"],
+  intro:["Cosmetology Fundamentals & Sanitation","Hair Cutting Basics","Shampooing, Conditioning & Scalp Care","State Law & Safety"],
+  core:["Hair Coloring & Chemical Texture","Advanced Cutting & Styling","Skin Care & Facials","Nail Technology","Salon Business Skills"],
+  adv:["Clinical Salon Floor Practice (supervised client hours)","State Board Exam Preparation"],
+  grad:["(Advancement path) instructor license, salon management, or A.A.S. in Business/Entrepreneurship"],
+  lic:"State cosmetology license required (typically 1,000–1,600 clock hours + written and practical exams)."},
+
+ /* ---- professional doctorates & health professions ---- */
+ {n:"Veterinary Medicine (DVM)",cip:"5124",cat:"Health",prof:["4 years","DVM"],alt:"vet school veterinarian animal doctor pre-vet",
+  d:"Becoming a veterinarian — the 4-year Doctor of Veterinary Medicine (DVM) professional degree, offered by about 35 U.S. vet schools.",
+  skip:["cert","assoc","mast"],
+  gate:"Veterinary Medicine is a 4-year professional doctorate (DVM). The path: a bachelor's in Animal Science, Biology, or any major with the pre-vet prerequisites → animal/veterinary experience hours → apply through VMCAS → 4-year DVM → NAVLE licensing exam. Use the Bachelor's tab to see the pre-vet plan, and the Doctorate tab for the DVM program itself.",
+  hs:["Biology & Chemistry","Algebra II / Pre-Calculus","Animal experience (4-H, shelters, clinics)"],
+  intro:["General Biology I–II with Lab","General Chemistry I–II with Lab","Introduction to Animal Science","Calculus or Statistics"],
+  core:["Organic Chemistry I–II","Biochemistry","Physics I–II","Genetics","Microbiology","Animal Nutrition"],
+  adv:["Animal Physiology","Vertebrate Anatomy","Veterinary/animal experience hours (500+ recommended)","GRE & VMCAS application (senior year)"],
+  grad:["DVM Years 1–2: Anatomy, Physiology, Pharmacology, Pathology, Immunology","DVM Year 3: Medicine & Surgery of Small/Large Animals","DVM Year 4: Clinical rotations (small animal, equine, food animal, exotics)","NAVLE board exam & state licensure","Optional internship/residency for specialization (surgery, dermatology, etc.)"],
+  lic:"Requires the DVM from an AVMA-accredited school and the NAVLE exam. Admission is competitive — GPA 3.5+ and extensive animal experience are typical."},
+ {n:"Animal Science (Pre-Vet)",cip:"0109",cat:"Agriculture",alt:"livestock equine animal husbandry pre-veterinary",
+  d:"The science of domestic animals — nutrition, breeding, health — and the classic pre-vet bachelor's.",
+  hs:["Biology & Chemistry","4-H / FFA or animal experience"],
+  intro:["Introduction to Animal Science","General Biology I–II","General Chemistry I–II","Livestock Evaluation or Companion Animal Care"],
+  core:["Animal Nutrition","Animal Reproduction","Genetics of Livestock","Animal Physiology","Feeds & Ration Formulation"],
+  adv:["Animal Health & Disease","Species Production Courses (beef, dairy, equine, poultry)","Internship (farm, clinic, industry)","Senior Capstone"],
+  grad:["Advanced Animal Nutrition or Genetics","Reproductive Physiology","Research Methods","Thesis (MS) — or entry to DVM programs"]},
+ {n:"Medicine (MD / DO)",cip:"5112",cat:"Health",prof:["4 yrs + 3–7 yr residency","MD / DO"],alt:"medical school doctor physician pre-med",
+  d:"Becoming a physician — the 4-year MD or DO professional doctorate plus residency.",
+  skip:["cert","assoc","mast"],
+  gate:"Medicine is a 4-year professional doctorate (MD or DO) followed by 3–7 years of residency. The path: any bachelor's with pre-med prerequisites (see the Pre-Medicine / Biology major) → MCAT → medical school → USMLE/COMLEX exams → residency match. Use the Doctorate tab to see the medical school sequence.",
+  hs:["Biology, Chemistry & Physics","Calculus / Statistics","Volunteering & shadowing"],
+  intro:["(Pre-med bachelor's) General Biology I–II","General Chemistry I–II","Psychology & Sociology (MCAT sections)","Calculus or Statistics"],
+  core:["Organic Chemistry I–II","Biochemistry","Physics I–II","Clinical volunteering & shadowing hours","MCAT preparation"],
+  adv:["MCAT exam","AMCAS/AACOMAS application & interviews","Research or clinical work (gap year common)"],
+  grad:["M1–M2: Anatomy, Physiology, Pharmacology, Pathology, Microbiology (pre-clinical)","USMLE Step 1 / COMLEX Level 1","M3: Core clerkships — internal medicine, surgery, pediatrics, OB/GYN, psychiatry, family medicine","M4: Electives, sub-internships & residency applications (Match)","Residency: 3–7 years in your specialty; board certification exams"],
+  lic:"Requires MD/DO, USMLE or COMLEX exams, and completion of residency for independent practice."},
+ {n:"Dentistry (DDS / DMD)",cip:"5104",cat:"Health",prof:["4 years","DDS / DMD"],alt:"dental school dentist pre-dental",
+  d:"Becoming a dentist — the 4-year DDS/DMD professional doctorate.",
+  skip:["cert","assoc","mast"],
+  gate:"Dentistry is a 4-year professional doctorate (DDS or DMD). The path: a bachelor's with pre-dental sciences → DAT exam → dental school → licensure (INBDE + clinical exam). Use the Doctorate tab for the dental school sequence; see Dental Hygiene for the associate-level clinical career.",
+  hs:["Biology & Chemistry","Algebra II / Pre-Calculus","Manual dexterity hobbies help (art, music, models)"],
+  intro:["(Pre-dental bachelor's) General Biology I–II","General Chemistry I–II","Physics I–II","Statistics"],
+  core:["Organic Chemistry I–II","Biochemistry","Anatomy & Physiology","Shadowing a dentist (100+ hours typical)","DAT preparation"],
+  adv:["DAT exam","AADSAS application & interviews","Research or dental assisting experience"],
+  grad:["D1–D2: Oral anatomy, histology, pathology, dental materials, pre-clinical lab (simulation)","D3–D4: Patient clinics — restorative, endodontics, periodontics, oral surgery, pediatric dentistry","INBDE written board & regional clinical licensure exam","Optional residency (orthodontics, oral surgery, pediatric) for specialties"],
+  lic:"Requires a DDS/DMD from a CODA-accredited school, the INBDE, and a state clinical exam."},
+ {n:"Law (J.D.)",cip:"2201",cat:"Law & Public Service",prof:["3 years","J.D."],alt:"law school lawyer attorney pre-law juris doctor",
+  d:"Becoming an attorney — the 3-year Juris Doctor professional degree and the bar exam.",
+  skip:["cert","assoc","bach"],
+  gate:"Law is a 3-year professional doctorate (J.D.) — there is no required undergraduate law major. The path: any bachelor's (political science, English, history, and philosophy are common) → LSAT → law school → bar exam. See Paralegal / Legal Studies for undergraduate legal careers, and use the Doctorate tab for the J.D. sequence.",
+  hs:["Strong reading & writing","Debate / mock trial","History & government"],
+  intro:["(Any bachelor's) Writing-intensive coursework","Logic / critical reasoning","Political Science or Philosophy electives","Internships in legal settings"],
+  core:["LSAT preparation & exam","Law school applications (LSAC)","Personal statement & recommendations"],
+  adv:["1L year: Contracts, Torts, Civil Procedure, Criminal Law, Property, Constitutional Law, Legal Writing"],
+  grad:["1L required curriculum (Contracts, Torts, Civ Pro, Crim, Property, Con Law)","2L–3L: Electives (evidence, corporations, tax, IP), clinics & journals","Summer associate / clerkship experience","Bar exam (UBE in most states) + MPRE ethics exam","Optional LL.M. for specialization (tax, international law)"],
+  lic:"Practice requires a J.D. from an ABA-accredited school plus the bar exam and character & fitness review."},
+ {n:"Physician Assistant Studies",cip:"5109",cat:"Health",alt:"PA physician associate",
+  d:"Physician assistants diagnose, treat, and prescribe on medical teams — a master's-level profession.",
+  skip:["cert","assoc"],
+  gate:"PA is a master's-level profession (~27 months). The path: a bachelor's with pre-PA sciences + 1,000–2,000 hands-on patient-care hours (EMT, CNA, medical assistant, scribe) → CASPA application → PA school → PANCE exam.",
+  hs:["Biology & Chemistry","Algebra II","Healthcare exposure (CNA/EMT courses)"],
+  intro:["(Pre-PA bachelor's) General Biology I–II","General Chemistry I–II","Anatomy & Physiology I–II","Medical Terminology"],
+  core:["Microbiology","Organic Chemistry or Biochemistry","Statistics","Psychology","Patient-care hours (EMT, CNA, scribe — 1,000+ typical)"],
+  adv:["GRE / PA-CAT (program-dependent)","CASPA application & interviews","Continued clinical hours"],
+  grad:["Didactic year: clinical medicine, pharmacology, anatomy with cadaver lab, physical diagnosis","Clinical year: rotations in family medicine, ER, surgery, pediatrics, psychiatry, women's health","PANCE national certifying exam","State licensure & collaborative practice agreement"],
+  lic:"Requires an ARC-PA-accredited master's and the PANCE. Recertification every 10 years (PANRE)."},
+ {n:"Physical Therapy (DPT)",cip:"5123",cat:"Health",prof:["3 years","DPT"],alt:"physical therapist rehab PT DPT PTA",
+  d:"Restoring movement and function — physical therapy is now a 3-year clinical doctorate (DPT).",
+  skip:["cert","mast"],
+  gate:"Physical therapy is practiced at two levels: the PTA (Physical Therapist Assistant, a 2-year associate — see the Associate tab) and the Doctor of Physical Therapy (DPT, a 3-year doctorate after a bachelor's — see the Doctorate tab). The master's route was retired.",
+  hs:["Biology & Physics","Algebra II","Sports / fitness involvement"],
+  intro:["Anatomy & Physiology I–II","Introduction to Physical Therapy","Medical Terminology","Kinesiology Fundamentals"],
+  core:["PTA: Therapeutic Exercise & Modalities","PTA: Clinical Pathology","PTA: Clinical Practicums I–III","(Pre-DPT) Exercise Physiology, Biomechanics, Physics I–II, Statistics"],
+  adv:["Observation hours in PT clinics (100+)","GRE & PTCAS application (DPT route)","NPTE-PTA licensure exam (associate route)"],
+  grad:["DPT Year 1: Gross anatomy, biomechanics, neuroscience, foundations of examination","DPT Year 2: Musculoskeletal, neuromuscular, cardiopulmonary management","DPT Year 3: Full-time clinical internships (~36 weeks)","NPTE licensure exam; optional residency (orthopedics, sports, neuro)"],
+  lic:"DPT + NPTE required to practice as a PT; PTA associate + NPTE-PTA for assistant practice."},
+ {n:"Occupational Therapy",cip:"5123",cat:"Health",prof:["~3 years","OTD"],alt:"OT OTA occupational therapist",
+  d:"Helping people do the activities of daily life after injury, illness, or disability.",
+  skip:["cert"],
+  gate:"OT is practiced as the OTA (occupational therapy assistant, associate level) or the OT (master's or doctorate).",
+  hs:["Biology","Psychology electives","Volunteering with disability communities"],
+  intro:["Anatomy & Physiology I–II","Introduction to Occupational Therapy","Medical Terminology","Lifespan Development"],
+  core:["OTA: Therapeutic Media & Activities","OTA: Pediatric & Geriatric Practice","OTA: Fieldwork I–II","(Pre-OT) Abnormal Psychology, Kinesiology, Statistics"],
+  adv:["Observation hours across OT settings","OTCAS application (MSOT/OTD route)","NBCOT-COTA exam (associate route)"],
+  grad:["Foundations of occupation & clinical reasoning","Assessment & intervention across the lifespan","Level II Fieldwork (24 weeks full-time)","OTD: doctoral capstone & residency","NBCOT certification exam & state licensure"],
+  lic:"OTR requires an accredited MSOT/OTD + NBCOT exam; COTA requires the associate + NBCOT-COTA."},
+ {n:"Speech-Language Pathology",cip:"5102",cat:"Health",alt:"SLP communication disorders audiology speech therapy",
+  d:"Evaluating and treating speech, language, and swallowing disorders across the lifespan.",
+  skip:["cert"],
+  gate:"Clinical practice as an SLP requires a master's (CCC-SLP). The bachelor's in Communication Sciences & Disorders is the standard preparation; audiology is a related clinical doctorate (AuD).",
+  hs:["Biology","Psychology & language electives","Volunteering with children or elders"],
+  intro:["Introduction to Communication Disorders","Phonetics","Anatomy of Speech & Hearing","Language Development"],
+  core:["Speech Science","Audiology Fundamentals","Language Disorders Across the Lifespan","Statistics","Neural Bases of Communication"],
+  adv:["Clinical Observation (25 guided hours)","Aural Rehabilitation","Senior Capstone / Research","CSDCAS application to graduate programs"],
+  grad:["Graduate clinical methods: articulation, fluency, voice, dysphagia, AAC","Supervised clinical practicum (400 hours)","Externships in schools & medical settings","Praxis exam in Speech-Language Pathology; Clinical Fellowship year → CCC-SLP"],
+  lic:"Requires an ASHA-accredited master's, 400 clinical hours, the Praxis, and a clinical fellowship."},
+ {n:"Practical Nursing (LPN/LVN)",cip:"5139",cat:"Health",alt:"LPN LVN licensed practical nurse vocational",
+  d:"A fast route into licensed nursing — practical nurses give hands-on care in about a year.",
+  skip:["bach","mast","doct"],
+  gate:"The LPN/LVN credential is a ~12-month certificate or part of a 2-year associate. To advance, bridge programs (LPN-to-RN, LPN-to-BSN) connect into the Nursing (RN/BSN) pathway — see that major for bachelor's and beyond.",
+  hs:["Biology","Algebra","CNA experience helps"],
+  intro:["Anatomy & Physiology for Practical Nursing","Fundamentals of Practical Nursing","Pharmacology Basics","Nutrition & Human Development"],
+  core:["Medical-Surgical Nursing for the LPN","Maternal-Child Nursing","Geriatric Nursing","Mental Health Concepts","Clinical Rotations (long-term care, med-surg)"],
+  adv:["Leadership & Role Transition","NCLEX-PN Review & Exam","LPN-to-RN bridge option"],
+  grad:["(Advancement path) LPN → RN bridge → BSN → MSN"],
+  lic:"Requires passing the NCLEX-PN; LPNs work under RN/physician direction."},
+ {n:"Medical Laboratory Science",cip:"5110",cat:"Health",alt:"MLS MLT clinical lab technologist phlebotomy",
+  d:"Running the lab tests behind most medical decisions — hematology, micro, chemistry, and blood banking.",
+  hs:["Biology & Chemistry","Algebra II"],
+  intro:["General Biology I–II","General Chemistry I–II","Introduction to Laboratory Science","Medical Terminology"],
+  core:["Clinical Hematology","Clinical Chemistry","Clinical Microbiology","Immunology & Serology","Urinalysis & Body Fluids"],
+  adv:["Immunohematology (Blood Bank)","Molecular Diagnostics","Clinical Practicum (hospital lab rotations)","ASCP Board of Certification Review"],
+  grad:["Advanced Diagnostics & Lab Management","Pathologists' Assistant or Lab Director coursework","Research / Thesis (MS)"],
+  lic:"MLT (associate) and MLS (bachelor's) certify through the ASCP exam; some states also license."},
+ {n:"Medical Assisting",cip:"5108",cat:"Health",alt:"clinical assistant front office phlebotomy CMA",
+  d:"The clinic multitasker — rooming patients, drawing blood, EKGs, and front-office work.",
+  skip:["mast","doct"],
+  gate:"Medical assisting is a certificate/associate career. Common next steps: LPN or RN nursing programs, health administration bachelor's, or specialized roles like phlebotomy and EKG tech.",
+  hs:["Biology","Health occupations electives"],
+  intro:["Medical Terminology","Anatomy & Physiology for Allied Health","Clinical Procedures I","Medical Office Administration"],
+  core:["Clinical Procedures II (injections, EKG, phlebotomy)","Pharmacology for Medical Assistants","Medical Insurance & Coding Basics","Electronic Health Records"],
+  adv:["Externship in a clinic (160+ hours)","CMA (AAMA) or RMA certification review"],
+  grad:["(Advancement path) LPN/RN bridge, health administration, or coding & billing specialist"],
+  lic:"The CMA (AAMA) credential requires graduating from an accredited program and a certification exam."},
+ {n:"Massage Therapy",cip:"5135",cat:"Health",alt:"bodywork therapeutic massage",
+  d:"Hands-on therapeutic care — a state-licensed practice built on anatomy and clinical technique.",
+  skip:["bach","mast","doct"],
+  gate:"Massage therapy is a certificate/associate career (500–1,000 clock hours). Advancement paths include sports massage specialization, athletic training, physical therapist assistant, or wellness business ownership.",
+  hs:["Biology","Health/PE electives"],
+  intro:["Anatomy & Physiology for Bodywork","Swedish Massage Techniques","Ethics & Professional Practice","Kinesiology Basics"],
+  core:["Deep Tissue & Sports Massage","Pathology for Massage Therapists","Trigger Point & Myofascial Techniques","Student Clinic Practice"],
+  adv:["Specialty Modalities (prenatal, oncology, chair)","Business & Marketing for Therapists","MBLEx Licensure Exam Prep"],
+  grad:["(Advancement path) PTA, athletic training, or wellness entrepreneurship"],
+  lic:"Most states require the MBLEx exam and licensure; hour requirements vary by state."},
+
+ /* ---- more science & social science ---- */
+ {n:"Neuroscience",cip:"2615",cat:"Science",alt:"brain cognitive neurobiology",
+  d:"The brain and nervous system — from molecules to mind — and a strong pre-med/research major.",
+  skip:["cert","assoc"],
+  gate:"Neuroscience is offered as a bachelor's and beyond. At community college, start with Biology or Psychology and transfer.",
+  hs:["Biology & Chemistry","Pre-Calculus","Psychology elective"],
+  intro:["Introduction to Neuroscience","General Biology I–II","General Chemistry I–II","Introduction to Psychology"],
+  core:["Cellular & Molecular Neuroscience","Systems Neuroscience","Statistics or Biostatistics","Organic Chemistry","Cognitive Neuroscience"],
+  adv:["Neuropharmacology or Neurobiology of Disease","Research Lab Experience","Physics I–II","Senior Thesis"],
+  grad:["Advanced Neurobiology","Techniques (imaging, electrophysiology)","Journal Club & Lab Rotations","Dissertation Research"]},
+ {n:"Marine Biology",cip:"2613",cat:"Science",alt:"ocean marine science oceanography",
+  d:"Life in the oceans — organisms, ecosystems, and conservation of the marine world.",
+  skip:["cert"],
+  hs:["Biology & Chemistry","Algebra II","Swimming/SCUBA a plus"],
+  intro:["General Biology I–II","Introduction to Marine Science","General Chemistry I–II","Earth & Ocean Systems"],
+  core:["Marine Biology","Invertebrate Zoology","Ichthyology","Oceanography","Statistics for Biologists","Ecology"],
+  adv:["Marine Ecology Field Course","Conservation & Fisheries Biology","Research Diving or At-Sea Experience","Senior Research Thesis"],
+  grad:["Advanced Marine Ecology","Biological Oceanography","Quantitative Methods","Thesis / Dissertation with Field Research"]},
+ {n:"Biotechnology",cip:"2612",cat:"Science",alt:"biotech genetic engineering lab technician",
+  d:"Applying molecular biology to real products — from lab-bench technician to R&D scientist.",
+  hs:["Biology & Chemistry","Algebra II"],
+  intro:["Introduction to Biotechnology","General Biology I–II","General Chemistry I–II","Basic Laboratory Techniques (pipetting, solutions, safety)"],
+  core:["Molecular Biology & Genetics","Cell Culture Techniques","Recombinant DNA Technology","Bioprocessing Basics","Biostatistics"],
+  adv:["Protein Purification & Analysis","Quality Control & GMP Regulations","Industry Internship","Capstone Research Project"],
+  grad:["Advanced Genetic Engineering","Bioinformatics","Bioprocess Engineering","Thesis or Industry Practicum"]},
+ {n:"Forensic Science",cip:"4304",cat:"Science",alt:"CSI crime lab criminalistics",
+  d:"Science in service of justice — evidence analysis from DNA to digital.",
+  hs:["Chemistry & Biology","Algebra II"],
+  intro:["Introduction to Forensic Science","General Chemistry I–II","General Biology I–II","Criminal Justice Fundamentals"],
+  core:["Forensic Chemistry (drugs & toxicology)","Forensic Biology & DNA Analysis","Crime Scene Investigation","Physical Evidence & Microscopy","Statistics"],
+  adv:["Instrumental Analysis","Forensic Laboratory Practicum","Courtroom Testimony & Ethics","Internship (crime lab or ME office)"],
+  grad:["Advanced Forensic DNA","Forensic Toxicology","Quality Assurance in the Crime Lab","Thesis Research"]},
+ {n:"Astronomy & Astrophysics",cip:"4002",cat:"Science",alt:"space astro cosmology",
+  d:"Stars, galaxies, and the universe — physics applied to the cosmos.",
+  skip:["cert","assoc"],
+  gate:"Astronomy is a bachelor's-and-beyond field. Start with Physics or Math at a community college and transfer.",
+  hs:["Physics & Calculus","Programming a plus"],
+  intro:["Introductory Astronomy","Physics I–II","Calculus I–III","Programming for Scientists (Python)"],
+  core:["Astrophysics I–II","Modern Physics","Classical Mechanics","Electromagnetism","Differential Equations"],
+  adv:["Observational Astronomy (telescope lab)","Galaxies & Cosmology","Stellar Structure","Senior Research Thesis"],
+  grad:["Graduate Astrophysics Core","Radiative Processes","Research Rotations & Observing Proposals","Dissertation Research"]},
+ {n:"Geology / Earth Science",cip:"4006",cat:"Science",alt:"geoscience earth environmental geology",
+  d:"Reading the Earth — rocks, resources, hazards, and climate history.",
+  hs:["Chemistry & Physics","Algebra II","Earth science elective"],
+  intro:["Physical Geology","Historical Geology","General Chemistry I–II","Calculus I"],
+  core:["Mineralogy","Petrology","Structural Geology","Sedimentology & Stratigraphy","Geomorphology"],
+  adv:["Field Camp (summer field geology)","Hydrogeology or Geophysics","GIS for Geoscientists","Senior Thesis"],
+  grad:["Advanced Specialty (tectonics, geochemistry, paleoclimate)","Research Methods","Thesis / Dissertation with Fieldwork"],
+  lic:"Professional Geologist (PG) licensure is available after degree + experience + the ASBOG exams."},
+ {n:"Geography & GIS",cip:"4507",cat:"Social Science",alt:"geographic information systems maps spatial cartography",
+  d:"Space, place, and the mapping technology (GIS) behind everything from city planning to logistics.",
+  hs:["Geography & computer electives","Algebra II"],
+  intro:["Human Geography","Physical Geography","Introduction to GIS","World Regional Geography"],
+  core:["Cartography & Visualization","Intermediate GIS & Spatial Analysis","Remote Sensing","Quantitative Methods","Urban or Economic Geography"],
+  adv:["GIS Programming (Python)","Spatial Databases","Applied GIS Project / Internship","Senior Capstone"],
+  grad:["Advanced Geospatial Analytics","GIScience Research Seminar","Thesis or GIS Professional Project"]},
+ {n:"Urban & Regional Planning",cip:"0403",cat:"Social Science",alt:"city planning urbanism zoning",
+  d:"Shaping how cities grow — land use, transportation, housing, and community development.",
+  skip:["cert"],
+  hs:["Government & geography","Algebra II"],
+  intro:["Introduction to Urban Planning","Urban Geography","Microeconomics","Statistics"],
+  core:["Land Use Planning & Zoning","Transportation Planning","GIS for Planners","Housing & Community Development","Planning Law"],
+  adv:["Planning Studio (real client project)","Environmental Planning","Internship with a planning agency","Senior Capstone"],
+  grad:["MURP Core: Planning Theory, Methods, Law","Specialization (transport, housing, environment)","Planning Studio & Client Project","AICP certification path after experience"]},
+ {n:"International Relations",cip:"4509",cat:"Social Science",alt:"global affairs diplomacy foreign policy",
+  d:"How states, organizations, and people interact globally — diplomacy, security, and development.",
+  hs:["History & government","Foreign language (start early!)"],
+  intro:["Introduction to International Relations","Comparative Politics","Microeconomics","Foreign Language I–II"],
+  core:["International Security","International Political Economy","Foreign Language (intermediate–advanced)","Research Methods","Regional Studies Elective"],
+  adv:["International Law & Organizations","Study Abroad Semester","Policy Internship (government, NGO, think tank)","Senior Thesis"],
+  grad:["Graduate IR Theory","Quantitative & Policy Analysis","Regional / Functional Specialization","Capstone or Thesis (MA/MIA)"]},
+ {n:"Philosophy",cip:"3801",cat:"Humanities",alt:"ethics logic pre-law",
+  d:"The big questions, argued rigorously — a top scorer for law school and analytical careers.",
+  skip:["cert"],
+  hs:["Strong reading & writing","Debate helpful"],
+  intro:["Introduction to Philosophy","Logic & Critical Reasoning","Ethics","History of Ancient Philosophy"],
+  core:["History of Modern Philosophy","Epistemology","Metaphysics","Philosophy of Mind or Language","Symbolic Logic"],
+  adv:["Advanced Seminar (single philosopher or problem)","Political Philosophy or Aesthetics","Senior Thesis"],
+  grad:["Graduate Proseminar","Area Distribution Seminars","Qualifying Papers","Dissertation Research"]},
+ {n:"Spanish & World Languages",cip:"1609",cat:"Humanities",alt:"foreign language French Spanish translation interpreter",
+  d:"Fluency plus cultural depth — for translation, teaching, global business, and healthcare.",
+  hs:["2–4 years of a language","Study abroad / exchange if possible"],
+  intro:["Intermediate Language I–II","Conversation & Composition","Introduction to Linguistics","Cultures of the Spanish-Speaking World (or target language)"],
+  core:["Advanced Grammar & Composition","Survey of Literature I–II","Phonetics & Pronunciation","Translation Fundamentals"],
+  adv:["Study Abroad Immersion Semester","Advanced Literature or Film Seminar","Interpreting Practice or Business Language","Senior Capstone"],
+  grad:["Graduate Literature & Culture Seminars","Applied Linguistics / Second-Language Acquisition","Teaching Methods (TA practicum)","Thesis / Dissertation"]},
+
+ /* ---- more business, computing, engineering ---- */
+ {n:"Actuarial Science",cip:"5213",cat:"Business",alt:"actuary risk insurance math",
+  d:"Pricing risk with math — one of the highest-paid majors per hour of schooling.",
+  skip:["cert"],
+  hs:["Calculus (AP strongly recommended)","Statistics"],
+  intro:["Calculus I–III","Probability","Financial Accounting","Microeconomics & Macroeconomics"],
+  core:["Mathematical Statistics","Theory of Interest (FM exam prep)","Probability Models (P exam prep)","Linear Algebra","Programming in R/Python"],
+  adv:["Actuarial Models & Loss Distributions","Regression & Time Series","Actuarial Exam Prep (FAM/SRM)","Internship at insurer or consultancy"],
+  grad:["Advanced Actuarial Modeling","Predictive Analytics","Remaining SOA/CAS exam coursework"],
+  lic:"Careers run on the SOA/CAS exam sequence — most students pass Exams P and FM before graduating."},
+ {n:"Real Estate",cip:"5215",cat:"Business",alt:"property broker development",
+  d:"The business of property — sales, finance, appraisal, and development.",
+  hs:["Algebra II","Business electives"],
+  intro:["Principles of Real Estate","Financial Accounting","Microeconomics","Business Statistics"],
+  core:["Real Estate Finance","Real Estate Law","Property Valuation & Appraisal","Real Estate Investments","Urban Economics"],
+  adv:["Real Estate Development","Property & Asset Management","Market Analysis Capstone","Licensing Exam Prep"],
+  grad:["MS Real Estate / MBA: Advanced RE Finance, Development Studio, REITs & Capital Markets"],
+  lic:"Sales agent and broker licenses are state exams; appraisal has its own license track."},
+ {n:"Sport Management",cip:"3105",cat:"Business",alt:"sports business athletics administration",
+  d:"The business behind sports — teams, venues, events, and athlete brands.",
+  hs:["Business electives","Athletics involvement"],
+  intro:["Introduction to Sport Management","Financial Accounting","Principles of Marketing","Sport in Society"],
+  core:["Sport Marketing & Sponsorship","Sport Finance","Facility & Event Management","Sport Law","Sales in Sport"],
+  adv:["Sport Analytics","Athlete Representation / NIL","Internship with a team or venue","Senior Capstone"],
+  grad:["Advanced Sport Business Strategy","Revenue Generation & Analytics","Graduate Internship / Capstone"]},
+ {n:"Construction Management",cip:"5220",cat:"Trades & Applied",alt:"builder general contractor construction",
+  d:"Running construction projects — estimating, scheduling, safety, and leading the build.",
+  hs:["Algebra II & Geometry","Shop/drafting electives"],
+  intro:["Introduction to Construction Management","Construction Materials & Methods","Construction Graphics & Plan Reading","College Algebra & Trigonometry"],
+  core:["Estimating I–II","Construction Scheduling","Building Codes & Inspection","Construction Safety (OSHA 30)","Soils & Foundations Basics"],
+  adv:["Project Management & Contracts","Mechanical/Electrical Systems for Builders","Heavy Civil or Residential Specialty","Capstone Project Bid & Plan"],
+  grad:["MS Construction Management: Advanced Project Controls, Risk, BIM/VDC, Capstone"],
+  lic:"Contractor licensing is state-based; CM certifications (CAC/CPC) add value."},
+ {n:"Network & Systems Administration",cip:"1109",cat:"Computing",alt:"networking sysadmin cloud infrastructure CCNA",
+  d:"Keeping the digital infrastructure running — networks, servers, and cloud systems.",
+  hs:["Computer basics","Algebra II"],
+  intro:["Introduction to Networking (CCNA prep)","Operating Systems: Windows & Linux","PC Hardware & Support (A+ prep)","Scripting Fundamentals"],
+  core:["Routing & Switching","Server Administration","Cloud Fundamentals (AWS/Azure)","Network Security Basics","Virtualization"],
+  adv:["Enterprise Network Design","Automation with Python/Ansible","Capstone: Build & Defend a Network","Internship / Help Desk Experience"],
+  grad:["(Advancement path) B.S. IT/Cybersecurity → MS in Network Engineering or Cloud Architecture"],
+  lic:"CompTIA A+/Network+ and Cisco CCNA certifications are commonly earned during the program."},
+ {n:"Game Development & Design",cip:"1108",cat:"Computing",alt:"video games gamedev interactive unity unreal",
+  d:"Building interactive worlds — programming, design, and art for games.",
+  hs:["Algebra II & programming","Art or writing electives"],
+  intro:["Introduction to Game Design","Programming Fundamentals (C#/C++)","2D Game Development","Digital Art & Asset Creation"],
+  core:["3D Game Development (Unity/Unreal)","Game Physics & Math","Level Design","Data Structures for Games","Game Audio"],
+  adv:["Multiplayer & Networked Games","Game AI","Portfolio Team Production (ship a game!)","Industry Internship"],
+  grad:["Graduate Game Studio","Advanced Graphics or AI","MFA/MS Thesis Game Project"]},
+ {n:"Industrial Engineering",cip:"1435",cat:"Engineering",alt:"operations optimization manufacturing systems",
+  d:"Making systems efficient — factories, hospitals, supply chains, and beyond.",
+  hs:["Calculus","Physics"],
+  intro:["Calculus I–III","Physics I–II","Introduction to Industrial Engineering","Computer Programming","Engineering Graphics"],
+  core:["Engineering Statistics","Operations Research (optimization)","Work Design & Ergonomics","Manufacturing Processes","Engineering Economy"],
+  adv:["Simulation Modeling","Quality Engineering (Six Sigma)","Production Planning & Control","Senior Design Capstone"],
+  grad:["Advanced Optimization","Stochastic Processes","Analytics for Systems","Thesis / Dissertation"],
+  lic:"FE/PE licensure available; Six Sigma belts are common industry credentials."},
+ {n:"Biomedical Engineering",cip:"1405",cat:"Engineering",alt:"bioengineering medical devices BME",
+  d:"Engineering for medicine — devices, imaging, prosthetics, and tissue engineering.",
+  skip:["cert"],
+  hs:["Calculus","Biology, Chemistry & Physics"],
+  intro:["Calculus I–III","Physics I–II","General Biology & Chemistry","Introduction to Biomedical Engineering","Programming (MATLAB/Python)"],
+  core:["Biomechanics","Bioinstrumentation & Circuits","Biomaterials","Physiology for Engineers","Differential Equations & Statistics"],
+  adv:["Medical Imaging","Biomedical Signal Processing","Regulatory & Design Controls (FDA)","Senior Design: Medical Device Capstone"],
+  grad:["Advanced Biomaterials or Imaging","Translational Design","Research Rotations","Thesis / Dissertation"]},
+ {n:"Environmental Engineering",cip:"1414",cat:"Engineering",alt:"water wastewater air quality sustainability",
+  d:"Engineering clean water, air, and soil — where civil engineering meets environmental science.",
+  skip:["cert"],
+  hs:["Calculus","Chemistry & Physics"],
+  intro:["Calculus I–III","General Chemistry I–II","Physics I–II","Introduction to Environmental Engineering","Engineering Graphics"],
+  core:["Fluid Mechanics","Environmental Chemistry","Water & Wastewater Treatment","Air Quality Engineering","Statics & Mechanics"],
+  adv:["Solid & Hazardous Waste Management","Hydrology & Stormwater Design","Environmental Regulations","Senior Design Capstone"],
+  grad:["Advanced Treatment Processes","Environmental Systems Modeling","Sustainability Engineering","Thesis / Dissertation"],
+  lic:"FE then PE (environmental) licensure is standard for consulting practice."},
+
+ /* ---- agriculture, arts & trades ---- */
+ {n:"Agricultural Business",cip:"0101",cat:"Agriculture",alt:"agribusiness farm management ag econ",
+  d:"The business of food and farming — markets, management, and ag policy.",
+  hs:["Algebra II","FFA/4-H or farm experience"],
+  intro:["Introduction to Agricultural Business","Microeconomics & Macroeconomics","Financial Accounting","Introduction to Crop & Animal Science"],
+  core:["Agricultural Marketing","Farm & Ranch Management","Agricultural Finance","Commodity Markets & Futures","Ag Policy"],
+  adv:["Agribusiness Strategy","Food Supply Chain Management","Internship (co-op, lender, producer)","Senior Capstone"],
+  grad:["MS Agribusiness / Ag Econ: Advanced Ag Markets, Quantitative Methods, Thesis"]},
+ {n:"Horticulture",cip:"0106",cat:"Agriculture",alt:"plants greenhouse landscaping nursery",
+  d:"Growing plants professionally — greenhouse, nursery, landscape, and food crops.",
+  hs:["Biology","FFA or gardening experience"],
+  intro:["Introduction to Horticulture","Plant Science Basics","Soil Science","Plant Identification"],
+  core:["Greenhouse Management","Plant Propagation","Integrated Pest Management","Landscape Design Basics","Nursery Operations"],
+  adv:["Advanced Production (fruits, vegetables, ornamentals)","Irrigation & Controlled Environments","Internship / Co-op","Capstone Project"],
+  grad:["MS Horticulture: Plant Breeding, Controlled-Environment Ag, Thesis Research"]},
+ {n:"Forestry",cip:"0305",cat:"Agriculture",alt:"forest management natural resources wildland",
+  d:"Managing forests for timber, wildlife, recreation, and resilience.",
+  hs:["Biology","Outdoor/conservation experience"],
+  intro:["Introduction to Forestry","Dendrology (tree ID)","General Biology & Chemistry","Forest Ecology Basics"],
+  core:["Forest Measurements & Inventory","Silviculture","Forest Ecology","GIS & Remote Sensing","Soils"],
+  adv:["Forest Management Planning","Fire Ecology & Management","Summer Field Camp","Capstone Management Plan"],
+  grad:["MS Forestry: Advanced Silviculture, Biometrics, Thesis"],
+  lic:"SAF-accredited degrees lead to Certified Forester and state registration options."},
+ {n:"Theatre & Drama",cip:"5005",cat:"Arts",alt:"acting stage performing arts musical theatre",
+  d:"Acting, directing, and stagecraft — training for the stage and screen.",
+  hs:["School theatre productions","Audition monologues prepared"],
+  intro:["Introduction to Theatre","Acting I–II","Stagecraft & Production","Voice & Movement"],
+  core:["Acting III (scene study)","Theatre History I–II","Directing Fundamentals","Design Survey (set, light, costume)","Dramatic Literature"],
+  adv:["Advanced Acting / Auditioning","Mainstage Production Roles","Senior Showcase (industry night)","Capstone Production"],
+  grad:["MFA Acting/Directing Studio (3 years)","Graduate Production Assignments","Thesis Role or Production"],
+  lic:"BFA and MFA admission requires auditions or portfolios."},
+ {n:"Electrician (Electrical Technology)",cip:"4603",cat:"Trades & Applied",alt:"electrical trades wiring journeyman apprentice",
+  d:"Wiring the built world — a licensed trade with apprenticeship and college paths.",
+  skip:["bach","mast","doct"],
+  gate:"Electricians train through certificates/associate degrees plus a paid apprenticeship (~4 years, 8,000 hours) to journeyman, then master electrician licensure. Advancement: electrical inspector, project management, or a Construction Management bachelor's.",
+  hs:["Algebra & shop classes","Physical stamina, color vision"],
+  intro:["Electrical Theory (AC/DC)","National Electrical Code (NEC) Basics","Residential Wiring","Electrical Safety & OSHA 10"],
+  core:["Commercial Wiring","Conduit Bending & Installation","Motors & Controls","Blueprint Reading","Grounding & Bonding"],
+  adv:["Industrial Controls & PLCs","Solar/PV Installation Basics","Apprenticeship Placement & Journeyman Exam Prep"],
+  grad:["(Advancement path) Journeyman → Master Electrician → contractor license or inspection"],
+  lic:"Licensure is state/local: apprenticeship hours + journeyman exam, then master electrician exam."}
+];
+
+/* ================= APP LOGIC ================= */
+
+const API_BASE = "https://api.data.gov/ed/collegescorecard/v1/schools";
+let apiKey = "DEMO_KEY";               // in-memory only for this session
+let selectedMajor = null;
+let lastResults = [];
+let activeLevelFilter = 0;             // 0 = all
+let currentLevelTab = null;
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ---- state dropdown ---- */
+(function initStates(){
+  const sel = $("stateSel");
+  sel.innerHTML = STATES.map(([c,n]) => `<option value="${c}">${n}</option>`).join("");
+  sel.value = "CA";
+})();
+
+/* ---- category metadata, popular shortcuts, browse-by-field ---- */
+const CATMETA = {
+  "Computing":["💻","#4f46e5"], "Health":["🩺","#0d9488"], "Science":["🔬","#7c3aed"],
+  "Social Science":["🧠","#d97706"], "Business":["📈","#15803d"], "Engineering":["⚙️","#3730a3"],
+  "Education":["🍎","#dc2626"], "Humanities":["📚","#a16207"], "Arts":["🎨","#db2777"],
+  "Law & Public Service":["⚖️","#475569"], "Trades & Applied":["🔧","#b45309"], "Agriculture":["🌱","#4d7c0f"]
+};
+const catIco = c => (CATMETA[c] || ["🎓"])[0];
+
+(function initExtras(){
+  const sm = $("statMajors"); if(sm) sm.textContent = MAJORS.length;
+  const POPULAR = ["Nursing (RN/BSN)","Computer Science","Business Administration","Psychology","Veterinary Medicine (DVM)","Mechanical Engineering"];
+  const pr = $("popRow");
+  if(pr){
+    pr.outerHTML = POPULAR.map(p => `<button class="pop" data-n="${esc(p)}">${esc(p)}</button>`).join("");
+    document.querySelectorAll(".pop").forEach(b => b.addEventListener("click", () => {
+      const m = MAJORS.find(x => x.n === b.dataset.n); if(m) chooseMajor(m);
+    }));
+  }
+  const grid = $("catGrid");
+  if(grid){
+    const cats = [...new Set(MAJORS.map(m => m.cat))];
+    grid.innerHTML = cats.map(c => {
+      const [ico, color] = CATMETA[c] || ["🎓","#4f46e5"];
+      const count = MAJORS.filter(m => m.cat === c).length;
+      return `<button class="cattile" data-c="${esc(c)}" style="--tc:${color}"><span class="ci">${ico}</span><div class="cn">${esc(c)}</div><div class="cc">${count} major${count === 1 ? "" : "s"}</div></button>`;
+    }).join("");
+    grid.querySelectorAll(".cattile").forEach(t => t.addEventListener("click", () => {
+      const pills = $("majorPills");
+      const wasOn = t.classList.contains("on");
+      grid.querySelectorAll(".cattile").forEach(x => x.classList.remove("on"));
+      if(wasOn){ pills.classList.remove("open"); return; }
+      t.classList.add("on");
+      const c = t.dataset.c;
+      pills.innerHTML = MAJORS.filter(m => m.cat === c).sort((a,b) => a.n.localeCompare(b.n))
+        .map(m => `<button class="mp" data-n="${esc(m.n)}">${catIco(c)} ${esc(m.n)}</button>`).join("");
+      pills.classList.add("open");
+      pills.querySelectorAll(".mp").forEach(b => b.addEventListener("click", () => {
+        const m = MAJORS.find(x => x.n === b.dataset.n);
+        if(m) chooseMajor(m);
+      }));
+    }));
+  }
+})();
+
+/* ---- autocomplete ---- */
+const input = $("majorInput"), ac = $("acList");
+let hlIdx = -1, acItems = [];
+
+function matchMajors(q){
+  q = q.trim().toLowerCase();
+  if(!q) return MAJORS.slice(0, 12);
+  const scored = MAJORS.map(m => {
+    const hay = (m.n + " " + (m.alt||"") + " " + m.cat).toLowerCase();
+    let s = -1;
+    if(m.n.toLowerCase().startsWith(q)) s = 0;
+    else if(m.n.toLowerCase().includes(q)) s = 1;
+    else if(hay.includes(q)) s = 2;
+    else {
+      const words = q.split(/\s+/);
+      if(words.every(w => hay.includes(w))) s = 3;
+    }
+    return {m, s};
+  }).filter(x => x.s >= 0);
+  scored.sort((a,b) => a.s - b.s || a.m.n.localeCompare(b.m.n));
+  return scored.slice(0, 12).map(x => x.m);
+}
+
+function renderAC(list){
+  acItems = list;
+  hlIdx = -1;
+  if(!list.length){
+    ac.innerHTML = `<div class="item" style="cursor:default;color:var(--sub)">No matching major — try another word (e.g., “biology”, “business”)</div>`;
+    ac.classList.add("open");
+    return;
+  }
+  ac.innerHTML = list.map((m,i) =>
+    `<div class="item" data-i="${i}"><span class="lft"><span class="ico">${catIco(m.cat)}</span>${esc(m.n)}</span><span class="cat">${esc(m.cat)}</span></div>`).join("");
+  ac.classList.add("open");
+  ac.querySelectorAll(".item[data-i]").forEach(el => {
+    el.addEventListener("mousedown", e => { e.preventDefault(); chooseMajor(acItems[+el.dataset.i]); });
+  });
+}
+function closeAC(){ ac.classList.remove("open"); hlIdx = -1; }
+
+function chooseMajor(m){
+  selectedMajor = m;
+  currentLevelTab = null;      // re-pick the best default level for this major
+  input.value = m.n;
+  closeAC();
+  doSearch();
+}
+
+input.addEventListener("input", () => { selectedMajor = null; renderAC(matchMajors(input.value)); });
+input.addEventListener("focus", () => renderAC(matchMajors(input.value)));
+input.addEventListener("blur", () => setTimeout(closeAC, 150));
+input.addEventListener("keydown", e => {
+  const items = ac.querySelectorAll(".item[data-i]");
+  if(e.key === "ArrowDown" || e.key === "ArrowUp"){
+    e.preventDefault();
+    if(!ac.classList.contains("open")) { renderAC(matchMajors(input.value)); return; }
+    hlIdx = e.key === "ArrowDown" ? Math.min(hlIdx+1, items.length-1) : Math.max(hlIdx-1, 0);
+    items.forEach((el,i) => el.classList.toggle("hl", i === hlIdx));
+    if(items[hlIdx]) items[hlIdx].scrollIntoView({block:"nearest"});
+  } else if(e.key === "Enter"){
+    e.preventDefault();
+    if(hlIdx >= 0 && acItems[hlIdx]) chooseMajor(acItems[hlIdx]);
+    else {
+      const best = matchMajors(input.value);
+      if(best.length){ chooseMajor(best[0]); } else { setStatus("err", "No matching major in the catalog — try a broader term like “biology”, “engineering”, or “business”."); }
+    }
+  } else if(e.key === "Escape"){ closeAC(); }
+});
+$("goBtn").addEventListener("click", () => {
+  if(selectedMajor){ doSearch(); return; }
+  const best = matchMajors(input.value);
+  if(best.length && input.value.trim()){ chooseMajor(best[0]); }
+  else setStatus("err", "Type a major and pick one of the suggestions to search.");
+});
+$("stateSel").addEventListener("change", () => { if(selectedMajor) doSearch(); });
+
+/* ---- status helper ---- */
+function setStatus(kind, html){
+  const box = $("statusBox");
+  box.className = "status" + (kind ? " " + kind : "");
+  box.innerHTML = html || "";
+  if(!kind) box.style.display = "none"; else box.style.display = "block";
+}
+
+/* ---- live search against College Scorecard ---- */
+async function doSearch(){
+  if(!selectedMajor) return;
+  const st = $("stateSel").value;
+  const stateName = (STATES.find(s => s[0] === st) || [st,st])[1];
+  $("goBtn").disabled = true;
+  setStatus("info", `<span class="spinner"></span>Searching colleges in ${esc(stateName)} offering <b>${esc(selectedMajor.n)}</b>…`);
+  $("resultsSec").style.display = "none";
+  renderRoadmap();  // roadmap is always available, even if the API call fails
+
+  const url = `${API_BASE}?api_key=${encodeURIComponent(apiKey)}&school.state=${st}` +
+    `&latest.programs.cip_4_digit.code=${selectedMajor.cip}` +
+    `&fields=id,school.name,school.city,school.school_url,school.ownership,latest.programs.cip_4_digit` +
+    `&per_page=100&sort=school.name`;
+
+  try{
+    const res = await fetch(url);
+    if(!res.ok){
+      if(res.status === 429){
+        setStatus("err", `The shared demo API key has hit its hourly limit. Click <b>⚙ API key</b> (top right) and paste a free key from <a href="https://api.data.gov/signup/" target="_blank" rel="noopener">api.data.gov/signup</a> — it takes about 30 seconds. Your course roadmap below still works.`);
+      } else if(res.status === 403){
+        setStatus("err", `The API key was rejected (HTTP 403). Check the key in <b>⚙ API key</b> settings.`);
+      } else {
+        setStatus("err", `The College Scorecard API returned an error (HTTP ${res.status}). Please try again in a moment. Your course roadmap below still works.`);
+      }
+      $("goBtn").disabled = false;
+      return;
+    }
+    const data = await res.json();
+    lastResults = (data.results || []).map(r => {
+      const progs = (r["latest.programs.cip_4_digit"] || []).filter(p => String(p.code) === String(selectedMajor.cip));
+      const levels = [...new Set(progs.map(p => p.credential && p.credential.level).filter(Boolean))].sort((a,b)=>a-b);
+      return { name: r["school.name"], city: r["school.city"], url: r["school.school_url"], own: r["school.ownership"], levels };
+    }).filter(r => r.levels.length);
+    activeLevelFilter = 0;
+    renderResults(data.metadata ? data.metadata.total : lastResults.length, stateName);
+    setStatus(null, "");
+  } catch(err){
+    setStatus("err", `Couldn't reach the College Scorecard API (${esc(err.message)}). If you're viewing this inside a restricted preview, download the file and open it directly in your browser — the roadmap below works either way.`);
+  }
+  $("goBtn").disabled = false;
+}
+
+/* ---- results rendering ---- */
+function renderResults(total, stateName){
+  const sec = $("resultsSec");
+  sec.style.display = "block";
+  $("resultsTitle").textContent = `${selectedMajor.n} in ${stateName}`;
+  const shown = lastResults.length;
+  $("countBubble").textContent = String(total > shown ? total : shown);
+  $("resultsSub").textContent = total > shown
+    ? `${total} colleges offer this program — showing the first ${shown} (A–Z).`
+    : `${shown} college${shown === 1 ? "" : "s"} in-state offer${shown === 1 ? "s" : ""} this program.`;
+
+  const levelsPresent = [...new Set(lastResults.flatMap(r => r.levels))].sort((a,b)=>a-b);
+  $("lvlFilters").innerHTML = shown ?
+    [`<button class="chip ${!activeLevelFilter ? "on" : ""}" data-l="0">All levels</button>`]
+    .concat(levelsPresent.map(l => `<button class="chip ${activeLevelFilter === l ? "on" : ""}" data-l="${l}">${CRED[l] || "Level "+l}</button>`)).join("") : "";
+  $("lvlFilters").querySelectorAll(".chip").forEach(b =>
+    b.addEventListener("click", () => { activeLevelFilter = +b.dataset.l; renderResults(total, stateName); }));
+
+  const list = activeLevelFilter ? lastResults.filter(r => r.levels.includes(activeLevelFilter)) : lastResults;
+  $("noResults").style.display = list.length ? "none" : "block";
+  $("noResults").textContent = shown
+    ? "No colleges match that credential level — try another level chip."
+    : `No colleges in ${stateName} report this exact program to the College Scorecard. Try a neighboring state or a related major.`;
+
+  const AV = [["#4f46e5","#7c3aed"],["#0d9488","#059669"],["#d97706","#dc2626"],["#db2777","#7c3aed"],["#3730a3","#0ea5e9"],["#15803d","#84cc16"]];
+  $("cards").innerHTML = list.map(r => {
+    const ownCls = r.own === 1 ? "own1" : r.own === 2 ? "own2" : "own3";
+    const ownTxt = r.own === 1 ? "Public" : r.own === 2 ? "Private nonprofit" : "Private for-profit";
+    let link = r.url || "";
+    if(link && !/^https?:\/\//i.test(link)) link = "https://" + link;
+    const av = AV[(r.name || "?").charCodeAt(0) % AV.length];
+    return `<div class="college">
+      <div class="cardtop">
+        <div class="avatar" style="--av1:${av[0]};--av2:${av[1]}">${esc((r.name || "?").charAt(0))}</div>
+        <div>
+          <div class="nm">${link ? `<a href="${esc(link)}" target="_blank" rel="noopener">${esc(r.name)}</a>` : esc(r.name)}</div>
+          <div class="loc">📍 ${esc(r.city || "")}, ${esc($("stateSel").value)}</div>
+        </div>
+      </div>
+      <div class="badges">
+        <span class="b ${ownCls}">${ownTxt}</span>
+        ${r.levels.map(l => `<span class="b ${GRAD.includes(l) ? "lvlgrad" : "lvl"}">${CRED[l] || l}</span>`).join("")}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+/* ---- roadmap builder ---- */
+const GENED_A = ["English Composition I–II","College Algebra or program math","Natural Science with Lab","Social & Behavioral Science elective","Humanities / Fine Arts elective","Public Speaking or Communication"];
+
+const LEVELS = [
+  {key:"cert", label:"Certificate", yrs:"~0.5–1.5 yrs"},
+  {key:"assoc", label:"Associate", yrs:"~2 yrs"},
+  {key:"bach", label:"Bachelor's", yrs:"~4 yrs"},
+  {key:"mast", label:"Master's", yrs:"~1.5–2 yrs"},
+  {key:"doct", label:"Doctorate", yrs:"~3–7 yrs"},
+];
+
+function buildLevel(m, key){
+  if(m.skip && m.skip.includes(key)){
+    const lbl = (LEVELS.find(l => l.key === key) || {}).label || key;
+    const avail = LEVELS.filter(l => !m.skip.includes(l.key));
+    return `<div class="gatebox"><div class="gi">🧭</div><h3>${esc(m.n)} isn't typically offered as a ${esc(lbl)}</h3><p>${esc(m.gate || "This field is delivered at other credential levels — pick another tab above.")}</p><div class="gsteps">${avail.map(l => `<div><b>${l.label}</b> — this field's pathway continues here (tap the tab above)</div>`).join("")}</div></div>`;
+  }
+  let statBuf = [];
+  const stat = (v,k) => { statBuf.push(`<div class="stat"><div class="v">${v}</div><div class="k">${k}</div></div>`); return ""; };
+  const statsOut = () => `<div class="stats">${statBuf.join("")}</div>`;
+  const card = (cls, title, items) => `<div class="rcard ${cls}"><h3><span class="dot"></span>${title}</h3><ul>${items.map(i=>`<li>${esc(i)}</li>`).join("")}</ul></div>`;
+  const term = (t, items) => `<div class="term"><div class="t">${t}</div><ul>${items.map(i=>`<li>${i}</li>`).join("")}</ul></div>`;
+  const e2 = a => a.map(esc);
+  const half = (a) => [a.slice(0, Math.ceil(a.length/2)), a.slice(Math.ceil(a.length/2))];
+
+  if(key === "cert"){
+    const courses = m.intro.concat(m.core.slice(0,2));
+    const [t1,t2] = half(courses);
+    stat("~1 year","Typical length"); stat("18–36","Credit hours"); stat("Entry-level","Career outcome");
+    return statsOut() +
+      `<div class="rmgrid">` +
+      card("pre","Prerequisites to enter",["High school diploma or GED","Placement testing in math/English at most community colleges", ...m.hs.slice(0,2).map(h=>"Helpful prep: "+h)]) +
+      card("out","What you leave with",["A career certificate in "+m.n,"Credits that usually stack into the associate degree","Qualification for entry-level roles or apprenticeships"]) +
+      `</div><div class="seq"><h3>Course sequence</h3>` + term("Term 1", e2(t1)) + term("Term 2", e2(t2)) + `</div>` +
+      (m.lic ? `<div class="note">📋 ${esc(m.lic)}</div>` : "");
+  }
+  if(key === "assoc"){
+    const majorCourses = m.intro.concat(m.core.slice(0,3));
+    stat("2 years","Typical length"); stat("~60","Credit hours"); stat("AA / AS / AAS","Degree earned");
+    return statsOut() +
+      `<div class="rmgrid">` +
+      card("pre","Prerequisites to enter",["High school diploma or GED","Placement tests or qualifying HS GPA", ...m.hs.slice(0,2).map(h=>"Helpful prep: "+h)]) +
+      card("out","What you leave with",["Associate degree in "+m.n,"General-education core complete (transfers to a bachelor's)","Eligibility for many technician / assistant-level jobs"]) +
+      `</div><div class="seq"><h3>Course sequence</h3>` +
+      term("Year 1 · General education + intro major courses", e2(GENED_A.slice(0,4).concat(majorCourses.slice(0,2)))) +
+      term("Year 2 · Remaining gen-ed + major core", e2(GENED_A.slice(4).concat(majorCourses.slice(2)))) +
+      `</div><div class="note">🔁 Transfer tip: an Associate of Science with an articulation agreement usually covers the first two years of the bachelor's at your state's public universities.</div>` +
+      (m.lic ? `<div class="note">📋 ${esc(m.lic)}</div>` : "");
+  }
+  if(key === "bach"){
+    stat("4 years","Typical length"); stat("~120","Credit hours"); stat("BA / BS","Degree earned");
+    return statsOut() +
+      `<div class="rmgrid">` +
+      card("pre","Prerequisites to enter",["High school diploma with college-prep coursework","Admissions application (many states' publics are test-optional)", ...m.hs.map(h=>"Recommended HS prep: "+h)]) +
+      card("out","What you leave with",["Bachelor's degree in "+m.n,"Qualification for most professional entry roles in the field","Eligibility to apply to master's and doctoral programs"]) +
+      `</div><div class="seq"><h3>Four-year course sequence</h3>` +
+      term("Year 1 · Foundations", e2(m.intro).concat(["General-education courses <span class='tagx'>gen ed</span>"])) +
+      term("Year 2 · Core requirements", e2(m.core.slice(0, Math.ceil(m.core.length/2))).concat(["Remaining general education <span class='tagx'>gen ed</span>"])) +
+      term("Year 3 · Advanced core", e2(m.core.slice(Math.ceil(m.core.length/2))).concat(e2(m.adv.slice(0,2)))) +
+      term("Year 4 · Specialization & capstone", e2(m.adv.slice(2)).concat(["Free electives / minor courses <span class='tagx'>elective</span>"])) +
+      `</div>` + (m.lic ? `<div class="note">📋 ${esc(m.lic)}</div>` : "");
+  }
+  if(key === "mast"){
+    stat("1.5–2 years","Typical length"); stat("30–36","Credit hours"); stat("MA / MS / M.Ed / MBA","Degree earned");
+    return statsOut() +
+      `<div class="rmgrid">` +
+      card("pre","Prerequisites to enter",["Bachelor's degree (in "+m.n+" or a related field)","Competitive GPA (typically 3.0+)","GRE/GMAT at some programs (increasingly waived)","Prerequisite coursework if changing fields: " + m.core.slice(0,2).join(", ")]) +
+      card("out","What you leave with",["Master's degree in "+m.n,"Qualification for senior, specialist, and management roles","Foundation for doctoral study"]) +
+      `</div><div class="seq"><h3>Program sequence</h3>` +
+      term("Year 1 · Graduate core", e2(m.grad.slice(0, Math.ceil(m.grad.length/2)))) +
+      term("Year 2 · Specialization & culminating experience", e2(m.grad.slice(Math.ceil(m.grad.length/2))).concat(["Thesis, comprehensive exam, or applied capstone <span class='tagx'>culminating</span>"])) +
+      `</div>` + (m.lic ? `<div class="note">📋 ${esc(m.lic)}</div>` : "");
+  }
+  /* doctorate */
+  if(m.prof){
+    stat(m.prof[0],"Typical length"); stat("Full-time","Professional cohort"); stat(m.prof[1],"Degree earned");
+    return statsOut() +
+      `<div class="rmgrid">` +
+      card("pre","Prerequisites to enter",["Bachelor's degree with the required prerequisite courses (see the Bachelor's tab for the prep plan)","Entrance exam & centralized application for this field","Interviews, recommendation letters & experience/observation hours"]) +
+      card("out","What you leave with",["Professional doctorate: "+m.prof[1],"Eligibility for the licensing exams in this field","A practice-ready credential in "+m.n]) +
+      `</div><div class="seq"><h3>Professional program sequence</h3>` +
+      term("Curriculum, clinical training & licensure", e2(m.grad)) +
+      `</div>` + (m.lic ? `<div class="note">📋 ${esc(m.lic)}</div>` : "");
+  }
+  stat("3–7 years","Typical length"); stat("60–90+","Credit hours past bachelor's"); stat("PhD / prof. doctorate","Degree earned");
+  return statsOut() +
+    `<div class="rmgrid">` +
+    card("pre","Prerequisites to enter",["Bachelor's required; master's helpful (many PhDs admit straight from bachelor's)","Strong GPA plus research or professional experience","Letters of recommendation & statement of purpose","Interviews / GRE at some programs"]) +
+    card("out","What you leave with",["Doctorate in "+m.n,"Qualification for research, university faculty, and top specialist roles","The terminal credential in the field"]) +
+    `</div><div class="seq"><h3>Program sequence</h3>` +
+    term("Years 1–2 · Advanced coursework", e2(m.grad.slice(0,3))) +
+    term("Year 2–3 · Qualifying / comprehensive exams", ["Written and oral exams over the field's core <span class='tagx'>milestone</span>","Advance to candidacy"]) +
+    term("Years 3+ · Dissertation research", ["Original research under a faculty advisor","Dissertation writing & defense <span class='tagx'>milestone</span>","Conference presentations & publications"]) +
+    `</div>` + (m.lic ? `<div class="note">📋 ${esc(m.lic)}</div>` : "");
+}
+
+function renderRoadmap(){
+  if(!selectedMajor) return;
+  const m = selectedMajor;
+  $("roadmapSec").style.display = "block";
+  $("rmIcon").textContent = catIco(m.cat);
+  $("rmTitle").textContent = "Degree roadmap: " + m.n;
+  $("rmDesc").textContent = m.d + " Pick a credential level to see what it takes to get in — and every course milestone on the way out.";
+  const avail = LEVELS.map(l => l.key).filter(k => !(m.skip && m.skip.includes(k)));
+  if(!currentLevelTab) currentLevelTab = ["bach","doct","mast","assoc","cert"].find(k => avail.includes(k)) || "bach";
+  $("lvlTabs").innerHTML = LEVELS.map((l,i) =>
+    `<button data-k="${l.key}" class="${currentLevelTab === l.key ? "on" : ""}${m.skip && m.skip.includes(l.key) ? " na" : ""}"><span class="stepn">${i+1}</span>${l.label}<span class="yrs">${m.skip && m.skip.includes(l.key) ? "see note" : l.yrs}</span></button>`).join("");
+  $("lvlTabs").querySelectorAll("button").forEach(b =>
+    b.addEventListener("click", () => { currentLevelTab = b.dataset.k; renderRoadmap(); }));
+  $("rmBody").innerHTML = buildLevel(m, currentLevelTab);
+}
+
+/* ---- API key modal ---- */
+$("gearBtn").addEventListener("click", () => { $("keyInput").value = apiKey === "DEMO_KEY" ? "" : apiKey; $("keyModal").classList.add("open"); });
+$("keyCancel").addEventListener("click", () => $("keyModal").classList.remove("open"));
+$("keySave").addEventListener("click", () => {
+  const v = $("keyInput").value.trim();
+  apiKey = v || "DEMO_KEY";
+  $("keyModal").classList.remove("open");
+  setStatus("info", v ? "API key saved for this session. Run your search again." : "Using the shared DEMO_KEY (low hourly limit).");
+  if(selectedMajor) doSearch();
+});
+$("keyModal").addEventListener("click", e => { if(e.target === $("keyModal")) $("keyModal").classList.remove("open"); });
+</script>
+</body>
+</html>
