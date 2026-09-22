@@ -7,7 +7,7 @@ Search 103 U.S. college majors, see every college in your state that offers each
 course roadmap from Certificate through Doctorate — including trade and professional
 paths like Electrician, DVM, MD and J.D.
 
-Free, no sign-up, no tracking, no backend. One HTML file.
+Free, no sign-up, no tracking, no backend. One HTML file plus a service worker. [Privacy policy](https://georgevillalobos.github.io/majormap/privacy.html).
 
 ## How it works
 
@@ -23,9 +23,13 @@ Free, no sign-up, no tracking, no backend. One HTML file.
   licensure notes) are hand-written representative sequences in `index.html` under `MAJORS`.
   Exact course names and prerequisites vary by institution — always confirm with the
   college's catalog and an advisor.
-- **Connections** (v1.1, in progress): per-major professional associations, student chapters
-  and first-job networking moves. The tab appears automatically for any major whose entry
-  carries a `conn` field.
+- **Connections** (v1.1): every major has a Connections tab — the professional associations,
+  unions and licensing bodies that run the field, the student chapters and competitions worth
+  joining, and the two or three moves that actually get people their first job. Data lives in
+  the `CONNECTIONS` map in `index.html`; links were checked from a real browser session.
+- **Installable (PWA).** `manifest.webmanifest` + `sw.js` + `pwa.js` make it installable on
+  desktop, Android and iPhone (Share → Add to Home Screen) and let the app shell work offline.
+  Store packaging status: `STORE-READINESS.md`; paste-ready listing copy: `STORE-LISTING.md`.
 
 ## Contributing
 
