@@ -21,9 +21,9 @@ Pattern: `ship-pwa-to-stores` skill (PWA → Microsoft Store → Google Play →
 | Step | Status |
 |---|---|
 | Reserve name "MajorMap" in Partner Center | ✅ 2026-09-22 — Store ID `9NKMSDXQ7Q89`, identity `PVGProduction.MajorMap` / `CN=0C91E156-C622-4063-A9C5-8133CAD0A3CF` / `PVG Production` (also in STORE-LISTING.md) |
-| Copy Product Identity values into PWABuilder → Windows → download .msixbundle | ⬜ George — first download used PWABuilder placeholders (MyCompany…), rebuild with the real three |
-| Listing: copy from `STORE-LISTING.md`, screenshots, privacy URL, age rating 3+ | ⬜ paste-ready |
-| Upload + submit | ⬜ |
+| Copy Product Identity values into PWABuilder → Windows → download .msixbundle | ✅ 2026-09-22 — rebuilt with real identity; bundle manifest verified (`PVGProduction.MajorMap`, v1.0.1.0) |
+| Listing: copy from `STORE-LISTING.md`, screenshots, privacy URL, age rating 3+ | ✅ 2026-09-22 — 1366×768 `screenshots/store-*.png`, logos in `store-art/` (box art, 9:16 poster, 300/150/71 tiles) |
+| Upload + submit | ✅ **Submitted for certification 2026-09-22 ~11:55 AM.** Expect hours to 3 days; listing goes live at https://apps.microsoft.com/detail/9NKMSDXQ7Q89 |
 
 ## Part 3 — Google Play
 
