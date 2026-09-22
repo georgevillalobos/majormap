@@ -1,6 +1,6 @@
 /* MajorMap service worker — app shell precache + offline fallback.
    Bump CACHE on every deploy that changes index.html. */
-const CACHE = "majormap-v1.1.0";
+const CACHE = "majormap-v1.1.1";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./pwa.js", "./privacy.html",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/icon-512-maskable.png", "./icons/apple-touch-icon.png", "./icons/favicon-32.png"];
 

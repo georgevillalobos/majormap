@@ -6,27 +6,93 @@
   "start_url": "./?source=pwa",
   "scope": "./",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone"],
+  "display_override": [
+    "window-controls-overlay",
+    "standalone"
+  ],
   "orientation": "any",
   "theme_color": "#4f46e5",
   "background_color": "#f8f7ff",
   "lang": "en-US",
   "dir": "ltr",
-  "categories": ["education", "productivity", "utilities"],
+  "categories": [
+    "education",
+    "productivity",
+    "utilities"
+  ],
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ],
   "screenshots": [
-    { "src": "screenshots/desktop-search.png", "sizes": "1280x800", "type": "image/png", "form_factor": "wide", "label": "Search a major and see every college in your state that offers it" },
-    { "src": "screenshots/mobile-roadmap.png", "sizes": "750x1334", "type": "image/png", "form_factor": "narrow", "label": "Degree roadmap from Certificate to Doctorate" }
+    {
+      "src": "screenshots/desktop-search.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Search a major and see every college in your state that offers it"
+    },
+    {
+      "src": "screenshots/mobile-roadmap.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Degree roadmap from Certificate to Doctorate"
+    }
   ],
   "shortcuts": [
-    { "name": "Nursing", "short_name": "Nursing", "url": "./?major=Nursing%20(RN%2FBSN)", "description": "Colleges and roadmap for Nursing" },
-    { "name": "Computer Science", "short_name": "CS", "url": "./?major=Computer%20Science", "description": "Colleges and roadmap for Computer Science" },
-    { "name": "Electrician", "short_name": "Electrician", "url": "./?major=Electrician%20(Electrical%20Technology)", "description": "Apprenticeship path for Electricians" },
-    { "name": "Veterinary Medicine", "short_name": "DVM", "url": "./?major=Veterinary%20Medicine%20(DVM)", "description": "The DVM path" }
+    {
+      "name": "Nursing",
+      "short_name": "Nursing",
+      "url": "./?major=Nursing%20(RN%2FBSN)",
+      "description": "Colleges and roadmap for Nursing"
+    },
+    {
+      "name": "Computer Science",
+      "short_name": "CS",
+      "url": "./?major=Computer%20Science",
+      "description": "Colleges and roadmap for Computer Science"
+    },
+    {
+      "name": "Electrician",
+      "short_name": "Electrician",
+      "url": "./?major=Electrician%20(Electrical%20Technology)",
+      "description": "Apprenticeship path for Electricians"
+    },
+    {
+      "name": "Veterinary Medicine",
+      "short_name": "DVM",
+      "url": "./?major=Veterinary%20Medicine%20(DVM)",
+      "description": "The DVM path"
+    }
   ],
-  "prefer_related_applications": false
+  "prefer_related_applications": false,
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "handle_links": "preferred",
+  "edge_side_panel": {
+    "preferred_width": 420
+  },
+  "scope_extensions": [
+    {
+      "origin": "https://georgevillalobos.github.io"
+    }
+  ]
 }

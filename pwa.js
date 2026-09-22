@@ -2,7 +2,7 @@
 (function () {
   if (!("serviceWorker" in navigator)) return;
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js").then(reg => {
+    navigator.serviceWorker.register("./sw.js", { scope: "./" }).then(reg => {
       reg.addEventListener("updatefound", () => {
         const nw = reg.installing;
         nw && nw.addEventListener("statechange", () => {
