@@ -12,8 +12,8 @@ Pattern: `ship-pwa-to-stores` skill (PWA → Microsoft Store → Google Play →
 | `pwa.js` (SW register, update toast, install chip, iOS add-to-home hint) | ✅ shipped |
 | Icons (192, 512 any, 512 maskable, apple-touch 180, favicon 32) + `icons/og.png` | ✅ shipped |
 | `privacy.html` at a public URL | ✅ shipped |
-| Screenshots `screenshots/desktop-search.png` (1280×800) and `screenshots/mobile-roadmap.png` (750×1334) | ⬜ **George: capture from the live site** — the manifest references them; PWABuilder scores them |
-| pwabuilder.com report all green | ⬜ run after screenshots land |
+| Screenshots: `screenshots/` — desktop-search, desktop-roadmap, desktop-connections (1280×800); mobile-search, mobile-roadmap, mobile-connections (750×1334) | ✅ shipped (Playwright, API mocked with a CA Nursing fixture so the cards render) — reuse for store forms |
+| pwabuilder.com report all green | ⬜ George: paste https://georgevillalobos.github.io/majormap/ into pwabuilder.com and fix any reds (none expected) |
 | HTTPS + stable URL | ✅ GitHub Pages (no tunnel needed — no local server) |
 
 ## Part 2 — Microsoft Store (do first; free account exists)
