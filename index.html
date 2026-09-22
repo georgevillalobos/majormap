@@ -130,6 +130,10 @@
   .levels button.on .stepn{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.5);color:#fff}
   .levels button:hover:not(.on){background:var(--brand-soft);color:var(--brand-2)}
   .levels button.na{opacity:.5}
+  .levels button.conn .stepn{border-style:dashed}
+  .chip.sort{border-style:dashed;font-weight:600}
+  .sortsep{flex:0 0 1px;height:24px;background:var(--line);margin:0 4px;align-self:center}
+  .rcard .why{font-weight:500;color:var(--sub)}
   .levels button .yrs{display:block;font-size:.72rem;font-weight:600;opacity:.75;margin-top:2px}
   .roadmap{display:flex;flex-direction:column;gap:16px}
   .rmgrid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
@@ -256,13 +260,14 @@
 </main>
 
 <footer>
-  College availability comes live from the College Scorecard API (api.data.gov). Course roadmaps are representative national sequences — exact course names, numbers, and prerequisites vary by institution; always confirm with the college’s own catalog and an academic advisor. Built with Claude.
+  College availability comes live from the College Scorecard API (api.data.gov). Course roadmaps are representative national sequences — exact course names, numbers, and prerequisites vary by institution; always confirm with the college’s own catalog and an academic advisor.
+  <br><br>Free, no sign-up, no tracking. Made by <a href="https://github.com/georgevillalobos" target="_blank" rel="noopener">George Villalobos</a> / PVG Production, built with Claude. <a href="https://github.com/georgevillalobos/majormap" target="_blank" rel="noopener">Source on GitHub</a> — found a wrong course or a missing major? Open an issue.
 </footer>
 
 <div class="modal" id="keyModal">
   <div class="mbox">
     <h3>College Scorecard API key</h3>
-    <p>The app ships with the shared <b>DEMO_KEY</b>, which has a low hourly limit. Get your own free key in ~30 seconds at <a href="https://api.data.gov/signup/" target="_blank" rel="noopener">api.data.gov/signup</a> (it's emailed to you instantly), then paste it here. The key is kept in memory for this session only.</p>
+    <p>Out of the box you get a free demo quota of <b>30 searches an hour</b> (50 a day) — plenty for most visits. Doing serious research? Get your own free key in ~30 seconds at <a href="https://api.data.gov/signup/" target="_blank" rel="noopener">api.data.gov/signup</a> (emailed instantly), paste it here, and the limit jumps to 1,000/hr. It's saved only in this browser and never sent anywhere but api.data.gov.</p>
     <input id="keyInput" type="text" placeholder="Paste your api.data.gov key (or leave DEMO_KEY)">
     <div class="mrow">
       <button class="btn2" id="keyCancel">Cancel</button>
@@ -1107,10 +1112,15 @@ const MAJORS = [
 /* ================= APP LOGIC ================= */
 
 const API_BASE = "https://api.data.gov/ed/collegescorecard/v1/schools";
-let apiKey = "DEMO_KEY";               // in-memory only for this session
+const PER_PAGE = 100;                  // API maximum per request
+const MAX_PAGES = 5;                   // up to 500 schools per search (protects the per-visitor DEMO_KEY budget)
+const KEY_STORE = "majormap.apikey";
+let apiKey = "DEMO_KEY";
+try { apiKey = localStorage.getItem(KEY_STORE) || "DEMO_KEY"; } catch(_) {}
 let selectedMajor = null;
 let lastResults = [];
 let activeLevelFilter = 0;             // 0 = all
+let sortMode = "level";                // "level" (highest credential first) or "az"
 let currentLevelTab = null;
 
 const $ = id => document.getElementById(id);
@@ -1262,32 +1272,40 @@ async function doSearch(){
   $("resultsSec").style.display = "none";
   renderRoadmap();  // roadmap is always available, even if the API call fails
 
-  const url = `${API_BASE}?api_key=${encodeURIComponent(apiKey)}&school.state=${st}` +
+  const pageUrl = page => `${API_BASE}?api_key=${encodeURIComponent(apiKey)}&school.state=${st}` +
     `&latest.programs.cip_4_digit.code=${selectedMajor.cip}` +
     `&fields=id,school.name,school.city,school.school_url,school.ownership,latest.programs.cip_4_digit` +
-    `&per_page=100&sort=school.name`;
+    `&per_page=${PER_PAGE}&page=${page}&sort=school.name`;
+
+  const explainHttp = status => {
+    if(status === 429) return `You've used up the free demo quota for now (30 searches an hour, 50 a day, per visitor). Click <b>⚙ API key</b> (top right) and paste your own free key from <a href="https://api.data.gov/signup/" target="_blank" rel="noopener">api.data.gov/signup</a> — takes about 30 seconds and lifts the limit to 1,000/hr. Your course roadmap below still works.`;
+    if(status === 403) return `The API key was rejected (HTTP 403). Check the key in <b>⚙ API key</b> settings.`;
+    return `The College Scorecard API returned an error (HTTP ${status}). Please try again in a moment. Your course roadmap below still works.`;
+  };
 
   try{
-    const res = await fetch(url);
-    if(!res.ok){
-      if(res.status === 429){
-        setStatus("err", `The shared demo API key has hit its hourly limit. Click <b>⚙ API key</b> (top right) and paste a free key from <a href="https://api.data.gov/signup/" target="_blank" rel="noopener">api.data.gov/signup</a> — it takes about 30 seconds. Your course roadmap below still works.`);
-      } else if(res.status === 403){
-        setStatus("err", `The API key was rejected (HTTP 403). Check the key in <b>⚙ API key</b> settings.`);
-      } else {
-        setStatus("err", `The College Scorecard API returned an error (HTTP ${res.status}). Please try again in a moment. Your course roadmap below still works.`);
+    let rows = [], total = 0, page = 0, truncated = false;
+    while(true){
+      const res = await fetch(pageUrl(page));
+      if(!res.ok){
+        if(page === 0){ setStatus("err", explainHttp(res.status)); $("goBtn").disabled = false; return; }
+        truncated = true; break;            // keep what we have if a later page fails
       }
-      $("goBtn").disabled = false;
-      return;
+      const data = await res.json();
+      total = data.metadata ? data.metadata.total : 0;
+      rows = rows.concat(data.results || []);
+      page++;
+      if(rows.length >= total || !(data.results || []).length) break;
+      if(page >= MAX_PAGES){ truncated = true; break; }
+      setStatus("info", `<span class="spinner"></span>Loading ${esc(stateName)} colleges… ${rows.length} of ${total}`);
     }
-    const data = await res.json();
-    lastResults = (data.results || []).map(r => {
+    lastResults = rows.map(r => {
       const progs = (r["latest.programs.cip_4_digit"] || []).filter(p => String(p.code) === String(selectedMajor.cip));
       const levels = [...new Set(progs.map(p => p.credential && p.credential.level).filter(Boolean))].sort((a,b)=>a-b);
       return { name: r["school.name"], city: r["school.city"], url: r["school.school_url"], own: r["school.ownership"], levels };
     }).filter(r => r.levels.length);
     activeLevelFilter = 0;
-    renderResults(data.metadata ? data.metadata.total : lastResults.length, stateName);
+    renderResults(Math.max(total, lastResults.length), stateName, truncated);
     setStatus(null, "");
   } catch(err){
     setStatus("err", `Couldn't reach the College Scorecard API (${esc(err.message)}). If you're viewing this inside a restricted preview, download the file and open it directly in your browser — the roadmap below works either way.`);
@@ -1296,24 +1314,42 @@ async function doSearch(){
 }
 
 /* ---- results rendering ---- */
-function renderResults(total, stateName){
+/* Highest credential a school offers for this major drives the default sort:
+   Bachelor's-granting first (most searchers want a 4-year path), then Associate, Certificate;
+   grad-only programs after undergrad ones; A–Z within each group. */
+const LEVEL_RANK = {3:0, 2:1, 1:2, 6:3, 7:3, 5:4, 4:5, 8:5};
+const schoolRank = r => Math.min(...r.levels.map(l => LEVEL_RANK[l] ?? 9));
+function sortRows(rows){
+  const out = rows.slice();
+  if(sortMode === "level") out.sort((a,b) => schoolRank(a) - schoolRank(b) || String(a.name).localeCompare(b.name));
+  else out.sort((a,b) => String(a.name).localeCompare(b.name));
+  return out;
+}
+
+function renderResults(total, stateName, truncated){
   const sec = $("resultsSec");
   sec.style.display = "block";
   $("resultsTitle").textContent = `${selectedMajor.n} in ${stateName}`;
   const shown = lastResults.length;
   $("countBubble").textContent = String(total > shown ? total : shown);
-  $("resultsSub").textContent = total > shown
-    ? `${total} colleges offer this program — showing the first ${shown} (A–Z).`
+  $("resultsSub").textContent = truncated && total > shown
+    ? `${total} colleges offer this program — showing the first ${shown}. Narrow with a level chip.`
     : `${shown} college${shown === 1 ? "" : "s"} in-state offer${shown === 1 ? "s" : ""} this program.`;
 
   const levelsPresent = [...new Set(lastResults.flatMap(r => r.levels))].sort((a,b)=>a-b);
   $("lvlFilters").innerHTML = shown ?
     [`<button class="chip ${!activeLevelFilter ? "on" : ""}" data-l="0">All levels</button>`]
-    .concat(levelsPresent.map(l => `<button class="chip ${activeLevelFilter === l ? "on" : ""}" data-l="${l}">${CRED[l] || "Level "+l}</button>`)).join("") : "";
+    .concat(levelsPresent.map(l => `<button class="chip ${activeLevelFilter === l ? "on" : ""}" data-l="${l}">${CRED[l] || "Level "+l}</button>`))
+    .concat([`<span class="sortsep"></span>`,
+      `<button class="chip sort ${sortMode === "level" ? "on" : ""}" data-s="level" title="Highest credential first">Sort: Level</button>`,
+      `<button class="chip sort ${sortMode === "az" ? "on" : ""}" data-s="az" title="Alphabetical">Sort: A–Z</button>`]).join("") : "";
   $("lvlFilters").querySelectorAll(".chip").forEach(b =>
-    b.addEventListener("click", () => { activeLevelFilter = +b.dataset.l; renderResults(total, stateName); }));
+    b.addEventListener("click", () => {
+      if(b.dataset.s) sortMode = b.dataset.s; else activeLevelFilter = +b.dataset.l;
+      renderResults(total, stateName, truncated);
+    }));
 
-  const list = activeLevelFilter ? lastResults.filter(r => r.levels.includes(activeLevelFilter)) : lastResults;
+  const list = sortRows(activeLevelFilter ? lastResults.filter(r => r.levels.includes(activeLevelFilter)) : lastResults);
   $("noResults").style.display = list.length ? "none" : "block";
   $("noResults").textContent = shown
     ? "No colleges match that credential level — try another level chip."
@@ -1438,6 +1474,23 @@ function buildLevel(m, key){
     `</div>` + (m.lic ? `<div class="note">📋 ${esc(m.lic)}</div>` : "");
 }
 
+/* ---- Connections: the people side of a major ----
+   m.conn = { orgs:[{n,u,w}], student:[{n,u,w}], moves:[string], note:string }
+   orgs    = professional associations, unions, licensing/credentialing bodies
+   student = student chapters, clubs, competitions, honor societies
+   moves   = the 2–4 things that actually get someone their first job in the field
+   The tab appears only for majors that carry this data. */
+function buildConnections(m){
+  const c = m.conn;
+  const link = o => `<li>${o.u ? `<a href="${esc(o.u)}" target="_blank" rel="noopener">${esc(o.n)}</a>` : esc(o.n)}${o.w ? ` <span class="why">— ${esc(o.w)}</span>` : ""}</li>`;
+  const card = (cls, title, items) => `<div class="rcard ${cls}"><h3><span class="dot"></span>${title}</h3><ul>${items}</ul></div>`;
+  return `<div class="rmgrid">` +
+    card("pre", "Professional organizations", (c.orgs || []).map(link).join("")) +
+    card("out", "Student chapters, clubs & competitions", (c.student || []).map(link).join("")) +
+    `</div><div class="seq"><h3>How people actually get their first job in ${esc(m.n)}</h3><div class="term"><ul>${(c.moves || []).map(s => `<li>${esc(s)}</li>`).join("")}</ul></div></div>` +
+    (c.note ? `<div class="note">🤝 ${esc(c.note)}</div>` : "");
+}
+
 function renderRoadmap(){
   if(!selectedMajor) return;
   const m = selectedMajor;
@@ -1446,12 +1499,14 @@ function renderRoadmap(){
   $("rmTitle").textContent = "Degree roadmap: " + m.n;
   $("rmDesc").textContent = m.d + " Pick a credential level to see what it takes to get in — and every course milestone on the way out.";
   const avail = LEVELS.map(l => l.key).filter(k => !(m.skip && m.skip.includes(k)));
-  if(!currentLevelTab) currentLevelTab = ["bach","doct","mast","assoc","cert"].find(k => avail.includes(k)) || "bach";
-  $("lvlTabs").innerHTML = LEVELS.map((l,i) =>
-    `<button data-k="${l.key}" class="${currentLevelTab === l.key ? "on" : ""}${m.skip && m.skip.includes(l.key) ? " na" : ""}"><span class="stepn">${i+1}</span>${l.label}<span class="yrs">${m.skip && m.skip.includes(l.key) ? "see note" : l.yrs}</span></button>`).join("");
+  if(!currentLevelTab || (currentLevelTab === "conn" && !m.conn)) currentLevelTab = ["bach","doct","mast","assoc","cert"].find(k => avail.includes(k)) || "bach";
+  const tabs = LEVELS.map((l,i) =>
+    `<button data-k="${l.key}" class="${currentLevelTab === l.key ? "on" : ""}${m.skip && m.skip.includes(l.key) ? " na" : ""}"><span class="stepn">${i+1}</span>${l.label}<span class="yrs">${m.skip && m.skip.includes(l.key) ? "see note" : l.yrs}</span></button>`);
+  if(m.conn) tabs.push(`<button data-k="conn" class="conn ${currentLevelTab === "conn" ? "on" : ""}"><span class="stepn">🤝</span>Connections<span class="yrs">people &amp; orgs</span></button>`);
+  $("lvlTabs").innerHTML = tabs.join("");
   $("lvlTabs").querySelectorAll("button").forEach(b =>
     b.addEventListener("click", () => { currentLevelTab = b.dataset.k; renderRoadmap(); }));
-  $("rmBody").innerHTML = buildLevel(m, currentLevelTab);
+  $("rmBody").innerHTML = currentLevelTab === "conn" ? buildConnections(m) : buildLevel(m, currentLevelTab);
 }
 
 /* ---- API key modal ---- */
@@ -1460,8 +1515,9 @@ $("keyCancel").addEventListener("click", () => $("keyModal").classList.remove("o
 $("keySave").addEventListener("click", () => {
   const v = $("keyInput").value.trim();
   apiKey = v || "DEMO_KEY";
+  try { if(v) localStorage.setItem(KEY_STORE, v); else localStorage.removeItem(KEY_STORE); } catch(_) {}
   $("keyModal").classList.remove("open");
-  setStatus("info", v ? "API key saved for this session. Run your search again." : "Using the shared DEMO_KEY (low hourly limit).");
+  setStatus("info", v ? "Your API key is saved in this browser. Searches now use your own 1,000/hr quota." : "Using the free demo quota (30 searches an hour per visitor).");
   if(selectedMajor) doSearch();
 });
 $("keyModal").addEventListener("click", e => { if(e.target === $("keyModal")) $("keyModal").classList.remove("open"); });
