@@ -13,15 +13,15 @@ Pattern: `ship-pwa-to-stores` skill (PWA → Microsoft Store → Google Play →
 | Icons (192, 512 any, 512 maskable, apple-touch 180, favicon 32) + `icons/og.png` | ✅ shipped |
 | `privacy.html` at a public URL | ✅ shipped |
 | Screenshots: `screenshots/` — desktop-search, desktop-roadmap, desktop-connections (1280×800); mobile-search, mobile-roadmap, mobile-connections (750×1334) | ✅ shipped (Playwright, API mocked with a CA Nursing fixture so the cards render) — reuse for store forms |
-| pwabuilder.com report all green | ⬜ George: paste https://georgevillalobos.github.io/majormap/ into pwabuilder.com and fix any reds (none expected) |
+| pwabuilder.com report all green | ✅ 2026-09-22 11:19 — 0 red, 0 yellow, manifest 34/46 |
 | HTTPS + stable URL | ✅ GitHub Pages (no tunnel needed — no local server) |
 
 ## Part 2 — Microsoft Store (do first; free account exists)
 
 | Step | Status |
 |---|---|
-| Reserve name "MajorMap" in Partner Center | ⬜ George |
-| Copy Product Identity values into PWABuilder → Windows → download .msixbundle | ⬜ George |
+| Reserve name "MajorMap" in Partner Center | ✅ 2026-09-22 — Store ID `9NKMSDXQ7Q89`, identity `PVGProduction.MajorMap` / `CN=0C91E156-C622-4063-A9C5-8133CAD0A3CF` / `PVG Production` (also in STORE-LISTING.md) |
+| Copy Product Identity values into PWABuilder → Windows → download .msixbundle | ⬜ George — first download used PWABuilder placeholders (MyCompany…), rebuild with the real three |
 | Listing: copy from `STORE-LISTING.md`, screenshots, privacy URL, age rating 3+ | ⬜ paste-ready |
 | Upload + submit | ⬜ |
 

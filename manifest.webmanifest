@@ -94,5 +94,12 @@
     {
       "origin": "https://georgevillalobos.github.io"
     }
+  ],
+  "related_applications": [
+    {
+      "platform": "windows",
+      "url": "https://apps.microsoft.com/detail/9NKMSDXQ7Q89",
+      "id": "PVGProduction.MajorMap_106xw499xpaw8"
+    }
   ]
 }

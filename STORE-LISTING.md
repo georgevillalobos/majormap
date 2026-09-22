@@ -7,7 +7,10 @@ Written 2026-09-22. Package identity is permanent once uploaded — decide it be
 | App name | **MajorMap** |
 | Subtitle / tagline | College major finder & degree roadmap |
 | Package ID (Play, iOS) | `com.pvgproduction.majormap` |
-| Windows Package/Identity/Name | reserved in Partner Center (copy from Product Identity after reserving the name "MajorMap") |
+| Windows Package/Identity/Name | `PVGProduction.MajorMap` (reserved 2026-09-22) |
+| Windows Package/Identity/Publisher | `CN=0C91E156-C622-4063-A9C5-8133CAD0A3CF` — same for every app on the account |
+| Windows PublisherDisplayName | `PVG Production` |
+| Microsoft Store ID / URL | `9NKMSDXQ7Q89` · https://apps.microsoft.com/detail/9NKMSDXQ7Q89 · PFN `PVGProduction.MajorMap_106xw499xpaw8` |
 | Publisher | PVG Production |
 | Website | https://georgevillalobos.github.io/majormap/ |
 | Privacy policy URL | https://georgevillalobos.github.io/majormap/privacy.html |
